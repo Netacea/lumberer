@@ -15,18 +15,28 @@ class Sinks(str, Enum):
 
 
 class LogTypes(str, Enum):
-    apache = "apache"
-    cloudfront = "cloudfront"
-    cloudflare = "cloudflare"
+    apache = "Apache"
+    cloudfront = "Cloudfront"
+    cloudflare = "Cloudflare"
 
 
 app = typer.Typer()
+
+
+def version_callback(value: bool):
+    if value:
+        from __init__ import __version__
+        typer.echo(f"Netacea Log Generator Version: {__version__}")
+        raise typer.Exit()
 
 
 @app.command()
 def stream(
     filecontent: Optional[typer.FileText] = typer.Argument(sys.stdin),
     output: Sinks = Sinks.stdout,
+    version: Optional[bool] = typer.Option(
+        None, "--version", callback=version_callback
+    ),
 ):
     """Stream stdin to output sink.
     """
@@ -43,13 +53,14 @@ def stream(
 def generate(
     log_type: LogTypes,
     iterations: int = 1,
+    version: Optional[bool] = typer.Option(
+        None, "--version", callback=version_callback
+    ),
 ):
     """Generates log lines to stdout
     """
     log_generator = getattr(lg, log_type.value)
-    with typer.progressbar(range(iterations), file=sys.stderr) as progress:
-        for value in progress:
-            print(log_generator())
+    log_generator(iterations=iterations).render(file=sys.stdout)
 
 
 if __name__ == "__main__":

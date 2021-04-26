@@ -1,7 +1,9 @@
-def apache():
-    """Apache Log Generator
+from generators.base import LogRender
 
-    Returns:
-        str: Apache Log Line
-    """
-    return '201.131.166.72 - bernhard3134 [18/Jan/2021:11:57:37 +0000] "POST /granular/extensible/leading-edge?q=2 HTTP/2.0" 404 36305 "http://www.seniorone-to-one.io/innovate/turn-key/extensible/value-added?q=1" "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"'
+
+class Apache(LogRender):
+    def __init__(self, iterations):
+        super().__init__(iterations)
+
+    def generate(self, d):
+        return f'{d["ip_address"]} - {d["user_name"]} [{d["date_time"].strftime("%d/%b/%Y:%H:%M:%S +0000")}] "{d["http_method"]} {d["uri_path"]+d["uri_query_params"]} {d["http_protocol"]}" {d["http_status"]} "{d["referer"]}" "{d["user_agent"]}"'
