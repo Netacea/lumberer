@@ -41,7 +41,12 @@ class LogRender:
 
     def render(self, file):
         with progressbar(
-            range(self.iterations), label="Lines Generated:", file=sys.stderr
+            range(self.iterations),
+            label="Progress:",
+            file=sys.stderr,
+            fill_char="█",
+            empty_char=" ",
+            width=64
         ) as progress:
             for value in progress:
                 x = self._seed_data(value)
