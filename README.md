@@ -11,3 +11,4 @@
 - Pacing of outputing data -> Scheduling in the future
 - Handle a lot of data
 - Multithreaded processes (producer)
+- Test python consumer parsers (integration testing)
