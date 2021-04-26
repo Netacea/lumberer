@@ -35,7 +35,7 @@ def stream(
     filecontent: Optional[typer.FileText] = typer.Argument(sys.stdin),
     output: Sinks = Sinks.stdout,
     version: Optional[bool] = typer.Option(
-        None, "--version", callback=version_callback
+        None, "--version", callback=version_callback, is_eager=True
     ),
 ):
     """Stream stdin to output sink.
@@ -54,7 +54,7 @@ def generate(
     log_type: LogTypes,
     iterations: int = 1,
     version: Optional[bool] = typer.Option(
-        None, "--version", callback=version_callback
+        None, "--version", callback=version_callback, is_eager=True
     ),
 ):
     """Generates log lines to stdout
