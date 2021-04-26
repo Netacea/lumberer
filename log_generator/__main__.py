@@ -5,6 +5,7 @@ from typing import Optional
 import typer
 
 import generators as lg
+import output as sinks
 
 
 class Sinks(str, Enum):
@@ -15,6 +16,8 @@ class Sinks(str, Enum):
 
 class LogTypes(str, Enum):
     apache = "apache"
+    cloudfront = "cloudfront"
+    cloudflare = "cloudflare"
 
 
 app = typer.Typer()
@@ -26,23 +29,27 @@ def stream(
     output: Sinks = Sinks.stdout,
 ):
     """Stream stdin to output sink.
-
-    Args:
-        filecontent (Optional[typer.FileText], optional): Logfile. Defaults to typer.Argument(sys.stdin).
     """
     if output == Sinks.stdout:
         for line in filecontent:
             sys.stdout.write(line)
+    elif output == Sinks.kafka:
+        with sinks.Kafka(broker="broker:9092", topic="my-topic") as kafka:
+            for line in filecontent:
+                kafka.send(line)
 
 
 @app.command()
 def generate(
-    log_type: LogTypes = None,
+    log_type: LogTypes,
     iterations: int = 1,
 ):
+    """Generates log lines to stdout
+    """
     log_generator = getattr(lg, log_type.value)
-    for _ in range(iterations):
-        print(log_generator())
+    with typer.progressbar(range(iterations), file=sys.stderr) as progress:
+        for value in progress:
+            print(log_generator())
 
 
 if __name__ == "__main__":
