@@ -1,20 +1,14 @@
-import boto3
-from botocore.exceptions import ClientError
 from datetime import datetime, timezone
+from pathlib import Path
 
 
-class S3:
+class Files:
     def __init__(
-        self,
-        bucket: str,
-        prefix: str,
-        buffer_size: int = 1000,
-        compressed: bool = False,
+        self, path: str = ".", buffer_size: int = 1000, compressed: bool = False
     ):
         self.compressed = compressed
         self.buffer_size = buffer_size
-        self.bucket = bucket
-        self.prefix = prefix
+        self.path = path
 
     def __enter__(self, buffer_size=1000):
         self.buffer = []
@@ -34,6 +28,6 @@ class S3:
             self.write(f"{now}.log")
 
     def write(self, key: str):
-        with open(key, "w") as file:
+        with open(Path(self.path) / Path(key), "w") as file:
             file.write("".join(self.buffer))
         self.buffer = []

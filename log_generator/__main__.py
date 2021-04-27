@@ -13,6 +13,7 @@ class Sinks(str, Enum):
     s3 = "s3"
     kafka = "kafka"
     stdout = "stdout"
+    files = "files"
 
 
 class LogTypes(str, Enum):
@@ -49,6 +50,14 @@ def stream(
             with sinks.Kafka(broker="broker:9092", topic="my-topic") as kafka:
                 for line in file:
                     kafka.send(line)
+        elif output == Sinks.s3:
+            with sinks.S3(bucket="test", prefix="/test") as s3:
+                for line in file:
+                    s3.send(line)
+        elif output == Sinks.files:
+            with sinks.Files() as local:
+                for line in file:
+                    local.send(line)
 
 
 @app.command()
@@ -58,10 +67,11 @@ def generate(
     version: Optional[bool] = typer.Option(
         None, "--version", callback=version_callback, is_eager=True
     ),
+    silent: Optional[bool] = typer.Option(False),
 ):
     """Generates log lines to stdout"""
     log_generator = getattr(lg, log_type.value)
-    log_generator(iterations=iterations).render(file=sys.stdout)
+    log_generator(iterations=iterations).render(file=sys.stdout, silent=silent)
 
 
 if __name__ == "__main__":

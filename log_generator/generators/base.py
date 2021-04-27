@@ -38,14 +38,21 @@ class LogRender:
             "uuid": fake.uuid4(),
         }
 
-    def render(self, file):
-        with progressbar(
-            range(self.iterations),
-            label="Progress:",
-            file=sys.stderr,
-            fill_char="█",
-            empty_char=" ",
-        ) as progress:
-            for value in progress:
-                x = self._seed_data(value)
-                print(self.generate(x), file=file)
+    def render(self, file, silent):
+        def print_line(seed=0):
+            x = self._seed_data(seed)
+            print(self.generate(x), file=file)
+
+        if silent:
+            for _ in range(self.iterations):
+                print_line()
+        else:
+            with progressbar(
+                range(self.iterations),
+                label="Progress:",
+                file=sys.stderr,
+                fill_char="█",
+                empty_char=" ",
+            ) as progress:
+                for value in progress:
+                    print_line()
