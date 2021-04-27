@@ -59,7 +59,7 @@ Example output:
 
 ```bash
 $ time bzcat example.apache.log.bz2 | pv | python log_generator stream --output kafka
- 215MiB 0:01:27 [2.48MiB/s] [                                          <=>                                                                                                                                        ]
+ 215MiB 0:01:27 [2.48MiB/s] [                    <=>                                ]
 
 real    1m27.189s
 user    1m52.882s
