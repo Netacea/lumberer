@@ -9,7 +9,8 @@ class Kafka:
 
     def __enter__(self):
         self.producer = KafkaProducer(
-            bootstrap_servers=self.bootstrap_servers, linger_ms=100)
+            bootstrap_servers=self.bootstrap_servers, linger_ms=100
+        )
         return self
 
     def __exit__(self, type, value, traceback):

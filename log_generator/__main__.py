@@ -27,6 +27,7 @@ app = typer.Typer()
 def version_callback(value: bool):
     if value:
         from __init__ import __version__
+
         typer.echo(f"Netacea Log Generator Version: {__version__}")
         raise typer.Exit()
 
@@ -39,8 +40,7 @@ def stream(
         None, "--version", callback=version_callback, is_eager=True
     ),
 ):
-    """Stream stdin to output sink.
-    """
+    """Stream stdin to output sink."""
     with Web():
         if output == Sinks.stdout:
             for line in filecontent:
@@ -59,8 +59,7 @@ def generate(
         None, "--version", callback=version_callback, is_eager=True
     ),
 ):
-    """Generates log lines to stdout
-    """
+    """Generates log lines to stdout"""
     log_generator = getattr(lg, log_type.value)
     log_generator(iterations=iterations).render(file=sys.stdout)
 

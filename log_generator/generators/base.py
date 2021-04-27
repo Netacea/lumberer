@@ -1,4 +1,3 @@
-
 from faker import Faker
 from typer import progressbar
 import sys
