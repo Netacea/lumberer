@@ -34,7 +34,7 @@ def version_callback(value: bool):
 
 @app.command()
 def stream(
-    filecontent: Optional[typer.FileText] = typer.Argument(sys.stdin),
+    file: Optional[typer.FileText] = typer.Argument(sys.stdin),
     output: Sinks = typer.Option(Sinks.stdout, case_sensitive=False),
     version: Optional[bool] = typer.Option(
         None, "--version", callback=version_callback, is_eager=True
@@ -43,11 +43,11 @@ def stream(
     """Stream stdin to output sink."""
     with Web():
         if output == Sinks.stdout:
-            for line in filecontent:
+            for line in file:
                 sys.stdout.write(line)
         elif output == Sinks.kafka:
             with sinks.Kafka(broker="broker:9092", topic="my-topic") as kafka:
-                for line in filecontent:
+                for line in file:
                     kafka.send(line)
 
 
