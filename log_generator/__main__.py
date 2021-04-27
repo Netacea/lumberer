@@ -34,25 +34,26 @@ def version_callback(value: bool):
 @app.command()
 def stream(
     filecontent: Optional[typer.FileText] = typer.Argument(sys.stdin),
-    output: Sinks = Sinks.stdout,
+    output: Sinks = typer.Option(Sinks.stdout, case_sensitive=False),
     version: Optional[bool] = typer.Option(
         None, "--version", callback=version_callback, is_eager=True
     ),
 ):
     """Stream stdin to output sink.
     """
-    if output == Sinks.stdout:
-        for line in filecontent:
-            sys.stdout.write(line)
-    elif output == Sinks.kafka:
-        with sinks.Kafka(broker="broker:9092", topic="my-topic") as kafka:
+    with Web():
+        if output == Sinks.stdout:
             for line in filecontent:
-                kafka.send(line)
+                sys.stdout.write(line)
+        elif output == Sinks.kafka:
+            with sinks.Kafka(broker="broker:9092", topic="my-topic") as kafka:
+                for line in filecontent:
+                    kafka.send(line)
 
 
 @app.command()
 def generate(
-    log_type: LogTypes,
+    log_type: LogTypes = typer.Option(..., case_sensitive=False),
     iterations: int = 1,
     version: Optional[bool] = typer.Option(
         None, "--version", callback=version_callback, is_eager=True
@@ -65,5 +66,4 @@ def generate(
 
 
 if __name__ == "__main__":
-    with Web():
-        app()
+    app()
