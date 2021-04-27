@@ -1,6 +1,7 @@
 import sys
 from enum import Enum
 from typing import Optional
+from web import Web
 
 import typer
 
@@ -64,4 +65,5 @@ def generate(
 
 
 if __name__ == "__main__":
-    app()
+    with Web():
+        app()
