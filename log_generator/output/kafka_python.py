@@ -13,7 +13,15 @@ class Kafka:
         return self
 
     def __exit__(self, type, value, traceback):
-        self.producer.flush(10)
+        try:
+            self.producer.flush(10)
+        except Exception:
+            print("Failed to produce all the messages to Kafka")
+            raise
 
     def send(self, logline: str):
-        self.producer.send(self.topic, logline.encode("UTF-8"))
+        try:
+            self.producer.send(self.topic, logline.encode("UTF-8"))
+        except KafkaError as e:
+            print(e)
+            raise e
