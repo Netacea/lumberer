@@ -50,3 +50,20 @@ However you can redirect the output of `generate` to a file:
 Additionally you can feed a file into the streamer, and this is useful if you want to create a reproduceable log, or stream a log to the sink quicker than you can generate new log lines:
 
 ```python log_generator stream --file apache.log --output kafka```
+
+## Benchmarking Kafka
+
+The docker image has `pv` installed to monitor the bandwidth through a unix pipe, so running this command will give you both the runtime of the process but also the instantaneous current bandwidth in the pipe.
+
+Example output:
+
+```bash
+$ time bzcat example.apache.log.bz2 | pv | python log_generator stream --output kafka
+ 215MiB 0:01:27 [2.48MiB/s] [                                          <=>                                                                                                                                        ]
+
+real    1m27.189s
+user    1m52.882s
+sys     0m17.771s
+```
+
+In this example the test data (1,000,000 apache log lines) took 1m 27 to produce into Kafka, and a throughput from the text source of 2.5MiB/s.
