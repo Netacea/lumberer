@@ -12,6 +12,7 @@ import output as sinks
 class Sinks(str, Enum):
     s3 = "s3"
     kafka = "kafka"
+    confluent = "confluent"
     stdout = "stdout"
     files = "files"
 
@@ -47,9 +48,13 @@ def stream(
             for line in file:
                 sys.stdout.write(line)
         elif output == Sinks.kafka:
-            with sinks.Kafka(broker="broker:9092", topic="my-topic") as kafka:
+            with sinks.Kafka(broker=["broker:9092"], topic="my-topic") as kafka:
                 for line in file:
                     kafka.send(line)
+        elif output == Sinks.confluent:
+            with sinks.ConfluentKafka(broker=["broker:9092"], topic="my-topic") as ck:
+                for line in file:
+                    ck.send(line)
         elif output == Sinks.s3:
             with sinks.S3(bucket="test", prefix="/test") as s3:
                 for line in file:
