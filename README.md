@@ -1,11 +1,13 @@
 # Netacea Log Generator
 
-## Functional Requirements
+## Requirements 
+
+### Functional Requirements
 - Generate logs
 - To be used by multiple parsers
 - Output to multiple sinks
 
-## Non Functional Requirements
+### Non Functional Requirements
 - "Benchmark mode"
 - Add some unexpected data
 - Pacing of outputing data -> Scheduling in the future
