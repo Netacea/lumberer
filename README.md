@@ -32,7 +32,8 @@
 - On Windows press ```Ctrl, shift + P``` to open up the command palette
 - Execute ```Remote-Containers: Open Workspace in Container``` to download all the requirements for the container and reopen Visual Studio Code.
 - On a browser open ```http://localhost:9000``` to access CMAK to administrate the local Kafka cluster.
-- Click on Cluster > Add Cluster & copy the setup in the image and save![cmak](docs/cmak_setup.png) 
+- Click on Cluster > Add Cluster & copy the setup in the image and save 
+  ![cmak](docs/cmak_setup.png) 
 
 
 ## Example Usage
@@ -55,7 +56,7 @@ Additionally you can feed a file into the streamer, and this is useful if you wa
 
 The docker image has `pv` installed to monitor the bandwidth through a unix pipe, so running this command will give you both the runtime of the process but also the instantaneous current bandwidth in the pipe.
 
-Example output:
+Example Output:
 
 ```bash
 $ time bzcat example.apache.log.bz2 | pv | python log_generator stream --output kafka
@@ -66,4 +67,10 @@ user    1m52.882s
 sys     0m17.771s
 ```
 
-In this example the test data (1,000,000 apache log lines) took 1m27 to produce into Kafka, and a throughput from the text source of 2.5MiB/s.
+In this example the test data (1,000,000 Apache log lines) took 1m27 to produce into Kafka, and a throughput from the text source of 2.5MiB/s.
+
+## Rate Limiting and Scheduling
+
+Log generation rate limiting and scheduling of changes to the rate limiter is implemented in the streaming side of the project.
+
+See [the documentation](docs/rate_limit.md) for more.
