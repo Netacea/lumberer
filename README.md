@@ -42,11 +42,11 @@ The tool is split into two commands, the `generate` command which only deals wit
 
 The most common usecase is to pipe `generate` to `stream` and create and send data to Kafka.
 
-```python log_generator generate --log-type apache --iterations 100000 | python log_generator stream --output kafka```
+```python log_generator generate --logtype apache --iterations 100000 | python log_generator stream --output kafka```
 
 However you can redirect the output of `generate` to a file:
 
-```python log_generator generate --log-type apache --iterations 10000 > apache.log```
+```python log_generator generate --logtype apache --iterations 10000 > apache.log```
 
 Additionally you can feed a file into the streamer, and this is useful if you want to create a reproduceable log, or stream a log to the sink quicker than you can generate new log lines:
 

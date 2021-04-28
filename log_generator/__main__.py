@@ -31,50 +31,98 @@ def version_callback(value: bool):
     if value:
         from __init__ import __version__
 
-        typer.echo(f"Netacea Log Generator Version: {__version__}")
+        typer.echo(f"Netacea Super Log Generator Version: {__version__}")
         raise typer.Exit()
 
 
 @app.command()
 def stream(
-    file: Optional[typer.FileText] = typer.Argument(sys.stdin),
-    output: AvailableSinks = typer.Option(AvailableSinks.stdout, case_sensitive=False),
-    version: Optional[bool] = typer.Option(
-        None, "--version", callback=version_callback, is_eager=True
+    inputfile: Optional[typer.FileText] = typer.Argument(
+        sys.stdin,
+        show_default=False,
+        help="Path to textfile to stream, defaults to stdin pipe if none given."
     ),
-    rate: Optional[int] = typer.Option(None),
-    scheduling_data: Optional[typer.FileText] = typer.Option(None),
+    outputsink: AvailableSinks = typer.Option(
+        AvailableSinks.stdout,
+        "-o",
+        "--output",
+        case_sensitive=False,
+        help="Sink to stream data to."
+    ),
+    rate: Optional[int] = typer.Option(
+        None,
+        "-r",
+        "--rate",
+        help="Rate-limit line generation per second."
+    ),
+    scheduling_data: Optional[typer.FileText] = typer.Option(
+        None,
+        "-s",
+        "--schedule",
+        help="Path to json file to schedule rate limits."
+    ),
+    version: Optional[bool] = typer.Option(
+        None,
+        "-v",
+        "--version",
+        is_eager=True,
+        callback=version_callback,
+        help="Show tool version."
+    ),
 ):
-    """Stream stdin to output sink."""
+    """This tool takes text input, new line seperated and streams it to a sink.
+    """
     with Web():
-        if output == AvailableSinks.stdout:
+        if outputsink == AvailableSinks.stdout:
             with ImplementedSinks.Stdout(
                 rate=rate, scheduling_data=scheduling_data
             ) as sink:
-                [sink.send(line) for line in file]
-        elif output == AvailableSinks.kafka:
+                [sink.send(line) for line in inputfile]
+        elif outputsink == AvailableSinks.kafka:
             with ImplementedSinks.Kafka(
                 rate=rate, broker="broker:9092", topic="my-topic"
             ) as sink:
-                [sink.send(line) for line in file]
-        elif output == AvailableSinks.s3:
+                [sink.send(line) for line in inputfile]
+        elif outputsink == AvailableSinks.s3:
             with ImplementedSinks.S3(rate=rate, bucket="test", prefix="/test") as sink:
-                [sink.send(line) for line in file]
-        elif output == AvailableSinks.files:
+                [sink.send(line) for line in inputfile]
+        elif outputsink == AvailableSinks.files:
             with ImplementedSinks.Files(rate=rate) as sink:
-                [sink.send(line) for line in file]
+                [sink.send(line) for line in inputfile]
 
 
 @app.command()
 def generate(
-    log_type: AvailableLogTypes = typer.Option(..., case_sensitive=False),
-    iterations: int = 1,
-    version: Optional[bool] = typer.Option(
-        None, "--version", callback=version_callback, is_eager=True
+    log_type: AvailableLogTypes = typer.Option(
+        ...,
+        "-l",
+        "--logtype",
+        case_sensitive=False,
+        help="Type of log to generate."
     ),
-    quiet: Optional[bool] = typer.Option(False),
+    iterations: int = typer.Option(
+        1,
+        "-i",
+        "--iterations",
+        help="Iterations of log lines to generate."
+    ),
+    quiet: Optional[bool] = typer.Option(
+        False,
+        "-q",
+        "--quiet",
+        help="Hide the progress bar."
+    ),
+    version: Optional[bool] = typer.Option(
+        None,
+        "-v",
+        "--version",
+        callback=version_callback,
+        is_eager=True,
+        help="Show tool version."
+    ),
 ):
-    """Generates log lines to stdout"""
+    """Generates log lines to stdout.
+    """
 
     log_generator = getattr(generators, log_type.value)
     log_generator(iterations=iterations).render(file=sys.stdout, quiet=quiet)
