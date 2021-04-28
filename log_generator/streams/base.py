@@ -1,12 +1,14 @@
+import datetime as dt
 import functools as _functools
+import json
+import re
 import threading as _threading
 import time
-from typing import Callable
-from random import randint
-from cachetools import TTLCache, cached
 from itertools import cycle
-import json
 from sys import exit
+from typing import Callable
+
+from cachetools import TTLCache, cached
 
 
 def rate_limited(max_per_second: int) -> Callable:
@@ -45,8 +47,9 @@ def rate_limited(max_per_second: int) -> Callable:
 
 
 class Output:
-    def __init__(self, rate: int, scheduling_data=None):
+    def __init__(self, rate: int = None, scheduling_data=None):
         self.rate = rate
+        self.ttl = None
         if scheduling_data:
             self._parse_schedule(scheduling_data)
             self.rate_set = cycle(self.raw_rate)
@@ -66,22 +69,52 @@ class Output:
         except Exception as e:
             raise e
 
-
     def _rate_polling(self):
         if self.rate:
             return self.rate
         else:
+
             @cached(cache=self.ttlcache)
             def subfunction(self):
                 return next(self.rate_set)
+
             return subfunction(self)
 
-    def send(self, logline):
+    def _add_timestamp(self, logline: str):
+        """Replace the logline's format placeholder with a real timestamp
+
+        Args:
+            logline (str): the raw logline before real timestamp is added
+
+        Returns:
+            str - the logline with the current timestamp in target format
+        """
+        target_pattern = r"!!!(.+)!!!"
+        try:
+            target_format = re.search(target_pattern, logline).groups()[0]
+            new_timestamp = dt.datetime.now().strftime(target_format)
+            logline = re.sub(target_pattern, new_timestamp, logline)
+        except Exception as e:
+            print("WARNING: unable to insert real timestamp in line {}".format(logline))
+            print(e)
+        finally:
+            return logline
+
+    def send(self, logline: str):
+        """Docstring
+
+        Args:
+            logline (str): the logline to send
+
+        Returns:
+            None
+        """
+        logline = self._add_timestamp(logline)
         if self.rate or self.ttl:
             func = rate_limited(self._rate_polling())(self._send)
             func(logline)
         else:
             self._send(logline)
 
-    def _send(self, logline):
+    def _send(self, logline: str):
         raise NotImplementedError

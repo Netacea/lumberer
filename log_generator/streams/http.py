@@ -1,6 +1,6 @@
-
 from streams.base import Output
 import httpx
+
 
 class HTTP(Output):
     def __init__(self, url: str, rate: int = 1):
@@ -31,7 +31,6 @@ class HTTP(Output):
             "BytesSent": "100",
             "NetaceaUserIdCookie": "NzQ5NTkyMDBmNDc5NmJkYzcwZmQ5YzgxYzg4MjI3NTcwZWYwODVkYTc0NGI4YmM3MTFmNjE3YWQzM2UwZTgxMQ==_/@#/1596112893_/@#/m92recxp96jt0vfh_/@#/211;",
             "NetaceaMitigationApplied": "ip_allow",
-            "Referer": "-"
+            "Referer": "-",
         }
         response = self.client.post(self.url, data=data)
-    

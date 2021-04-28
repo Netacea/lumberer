@@ -43,15 +43,19 @@ def stream(
         None, "--version", callback=version_callback, is_eager=True
     ),
     rate: Optional[int] = typer.Option(None),
-    scheduling_data: Optional[typer.FileText] = typer.Option(None)
+    scheduling_data: Optional[typer.FileText] = typer.Option(None),
 ):
     """Stream stdin to output sink."""
     with Web():
         if output == AvailableSinks.stdout:
-            with ImplementedSinks.Stdout(rate=rate, scheduling_data=scheduling_data) as sink:
+            with ImplementedSinks.Stdout(
+                rate=rate, scheduling_data=scheduling_data
+            ) as sink:
                 [sink.send(line) for line in file]
         elif output == AvailableSinks.kafka:
-            with ImplementedSinks.Kafka(rate=rate, broker="broker:9092", topic="my-topic") as sink:
+            with ImplementedSinks.Kafka(
+                rate=rate, broker="broker:9092", topic="my-topic"
+            ) as sink:
                 [sink.send(line) for line in file]
         elif output == AvailableSinks.s3:
             with ImplementedSinks.S3(rate=rate, bucket="test", prefix="/test") as sink:
@@ -68,7 +72,7 @@ def generate(
     version: Optional[bool] = typer.Option(
         None, "--version", callback=version_callback, is_eager=True
     ),
-    quiet: Optional[bool] = typer.Option(False)
+    quiet: Optional[bool] = typer.Option(False),
 ):
     """Generates log lines to stdout"""
 
