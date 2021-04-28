@@ -43,6 +43,7 @@ class LogRender:
             "referer": fake.uri(),
             "user_agent": fake.user_agent(),
             "uuid": fake.uuid4(),
+            "loc": fake.bank_country().lower()
         }
 
     def render(self, file, quiet):

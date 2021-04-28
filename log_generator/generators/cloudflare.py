@@ -3,7 +3,7 @@ from generators.base import LogRender
 
 class Cloudflare(LogRender):
     def __init__(self, iterations):
-        super().__init__(iterations, timestamp_format="%Y-%m-%d %H:%M:%S")
+        super().__init__(iterations, timestamp_format="%Y-%m-%dT%H:%M:%SZ")
 
     def generate(self, d: dict) -> str:
         """Generate Cloudflare Log format string.
@@ -14,16 +14,6 @@ class Cloudflare(LogRender):
         Returns:
             str: Cloudflare Log Line format.
         """
-        x_edge_location = "Casdf3-C1"
-        cloudfront_host = "d1yn713.cloudfront.net"
-        x_edge_result_type = "Miss"
-        x_edge_request_id = "S7rh9sTk8_hC6HUOjWRywP4s5Leyg9q_JZd-8P49wQ=="
-        x_host_header = "sports.dummydomain.com"
-        x_forwarded_for = "-"
-        ssl_protocol = "TLSv1.2"
-        ssl_cipher = "ECDHE-RSA-AES128-GCM-SHA256"
-        x_edge_response_result_type = "Miss"
-        fle_status = "-"
-        fle_encrypted_fields = "-"
-        return f"""!!!{self.timestamp_format}!!! {x_edge_location} {d["transfer_size"]} {d["ip_address"]} {d["http_method"]} {cloudfront_host} {d["uri_path"]} {d["http_status"]} {d["referer"]} {d["user_agent"]} {d["uri_query_params"]} {d["user_name"]} {x_edge_result_type} {x_edge_request_id} {x_host_header} {d["http_protocol"]} {d["transfer_size"]} {d["request_time"]} {x_forwarded_for} (ssl_protocol) {ssl_cipher} {x_edge_response_result_type} {d["http_protocol"]} {fle_status} {fle_encrypted_fields}
-""" # noqa: E501  
+        transfer_size = 0 if d["transfer_size"] == "-" else d["transfer_size"]
+        log_line = f""""CacheCacheStatus":"hit","CacheResponseBytes":{transfer_size},"CacheResponseStatus":{d["http_status"]},"CacheTieredFill":false,"ClientASN":5607,"ClientCountry":"{d["loc"]}","ClientDeviceType":"mobile","ClientIP":"{d["ip_address"]}","ClientIPClass":"noRecord","ClientRequestBytes":{transfer_size},"ClientRequestHost":"{d["host"]}","ClientRequestMethod":"{d["http_method"]}","ClientRequestProtocol":"{d["http_protocol"]}","ClientRequestReferer":"{d["referer"]}","ClientRequestURI":"{d["uri_path"]}","ClientRequestUserAgent":"{d["user_agent"]}","ClientSSLCipher":"ECDHE-RSA-AES128-GCM-SHA256","ClientSSLProtocol":"TLSv1.2","ClientSrcPort":59400,"EdgeColoID":21,"EdgeEndTimestamp":"!!!{self.timestamp_format}!!!","EdgePathingOp":"wl","EdgePathingSrc":"macro","EdgePathingStatus":"nr","EdgeRateLimitAction":"","EdgeRateLimitID":0,"EdgeRequestHost":"{d["host"]}","EdgeResponseBytes":{transfer_size},"EdgeResponseCompressionRatio":0,"EdgeResponseContentType":"application/x-javascript;charset=utf-8","EdgeResponseStatus":{d["http_status"]},"EdgeServerIP":"","EdgeStartTimestamp":"!!!{self.timestamp_format}!!!","OriginIP":"","OriginResponseBytes":0,"OriginResponseHTTPExpires":"","OriginResponseHTTPLastModified":"","OriginResponseStatus":0,"OriginResponseTime":0,"OriginSSLProtocol":"unknown","RayID":"443403c718asdf83","SecurityLevel":"low","WAFAction":"unknown","WAFFlags":"0","WAFMatchedVar":"","WAFProfile":"unknown","WAFRuleID":"","WAFRuleMessage":"","ZoneID":24067324"""  # noqa: E501
+        return "{" + log_line + "}"
