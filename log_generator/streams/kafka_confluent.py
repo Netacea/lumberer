@@ -36,7 +36,7 @@ class ConfluentKafka:
             print("Failed to produce all the messages to Kafka")
             raise
 
-    def send(self, logline: str):
+    def _send(self, logline: str):
         try:
             self.producer.produce(self.topic, logline.encode("UTF-8"))
             self.producer.poll(0)
