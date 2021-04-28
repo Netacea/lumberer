@@ -22,7 +22,7 @@ class Kafka(Output):
             print("Failed to produce all the messages to Kafka")
             raise
 
-    def send(self, logline: str):
+    def _send(self, logline: str):
         try:
             self.producer.send(self.topic, logline.encode("UTF-8"))
         except KafkaError as e:
