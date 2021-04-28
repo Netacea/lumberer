@@ -6,8 +6,10 @@ from confluent_kafka import (
     TopicPartition,
 )
 
+from output.base import BaseSink
 
-class ConfluentKafka:
+
+class ConfluentKafka(BaseSink):
     def __init__(self, broker: list, topic: str):
         self.bootstrap_servers = broker
         self.topic = topic
@@ -37,6 +39,8 @@ class ConfluentKafka:
             raise
 
     def send(self, logline: str):
+        logline = super().add_timestamp(logline)
+
         try:
             self.producer.produce(self.topic, logline.encode("UTF-8"))
             self.producer.poll(0)

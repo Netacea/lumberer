@@ -1,8 +1,8 @@
 from kafka import KafkaProducer
 from kafka.errors import KafkaError
+from output.base import BaseSink
 
-
-class Kafka:
+class Kafka(BaseSink):
     def __init__(self, broker: list, topic: str):
         self.bootstrap_servers = broker
         self.topic = topic
@@ -21,6 +21,7 @@ class Kafka:
             raise
 
     def send(self, logline: str):
+        logline = super().add_timestamp(logline)
         try:
             self.producer.send(self.topic, logline.encode("UTF-8"))
         except KafkaError as e:

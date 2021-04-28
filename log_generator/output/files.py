@@ -1,8 +1,9 @@
 from datetime import datetime, timezone
 from pathlib import Path
+from output.base import BaseSink
 
 
-class Files:
+class Files(BaseSink):
     def __init__(
         self, path: str = ".", buffer_size: int = 1000, compressed: bool = False
     ):
@@ -22,6 +23,7 @@ class Files:
         pass
 
     def send(self, logline: str):
+        logline = super().add_timestamp(logline)
         self.buffer.append(logline)
         if len(self.buffer) > self.buffer_size:
             now = datetime.utcnow().replace(tzinfo=timezone.utc).isoformat()

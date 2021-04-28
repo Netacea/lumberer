@@ -1,9 +1,10 @@
 import boto3
 from botocore.exceptions import ClientError
 from datetime import datetime, timezone
+from output.base import BaseSink
 
 
-class S3:
+class S3(BaseSink):
     def __init__(
         self,
         bucket: str,
@@ -28,6 +29,7 @@ class S3:
         pass
 
     def send(self, logline: str):
+        logline = super().add_timestamp(logline)
         self.buffer.append(logline)
         if len(self.buffer) > self.buffer_size:
             now = datetime.utcnow().replace(tzinfo=timezone.utc).isoformat()

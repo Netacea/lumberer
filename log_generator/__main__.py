@@ -1,3 +1,4 @@
+import datetime as dt
 import sys
 from enum import Enum
 from typing import Optional
@@ -45,8 +46,9 @@ def stream(
     """Stream stdin to output sink."""
     with Web():
         if output == Sinks.stdout:
-            for line in file:
-                sys.stdout.write(line)
+            with sinks.Stdout() as stdout:
+                for line in file:
+                    stdout.send(line)
         elif output == Sinks.kafka:
             with sinks.Kafka(broker=["broker:9092"], topic="my-topic") as kafka:
                 for line in file:

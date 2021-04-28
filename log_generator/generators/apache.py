@@ -6,4 +6,4 @@ class Apache(LogRender):
         super().__init__(iterations)
 
     def generate(self, d):
-        return f'{d["ip_address"]} - {d["user_name"]} [{d["date_time"].strftime("%d/%b/%Y:%H:%M:%S +0000")}] "{d["http_method"]} {d["uri_path"]+d["uri_query_params"]} {d["http_protocol"]}" {d["http_status"]} "{d["referer"]}" "{d["user_agent"]}"'  # noqa: E501
+        return f'{d["ip_address"]} - {d["user_name"]} [timestamp_to_interpolate] "{d["http_method"]} {d["uri_path"]+d["uri_query_params"]} {d["http_protocol"]}" {d["http_status"]} "{d["referer"]}" "{d["user_agent"]}"'  # noqa: E501
