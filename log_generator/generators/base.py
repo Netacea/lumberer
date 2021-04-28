@@ -4,9 +4,9 @@ import sys
 
 
 class LogRender:
-    def __init__(self, iterations: int = 1, seed: int = 4321):
-        self.timestamp_format = "%Y-%m-%dT%H:%M:%S"
+    def __init__(self, iterations: int = 1, seed: int = 4321, timestamp_format: str = "%Y-%m-%dT%H:%M:%S"):
         self.iterations = iterations
+        self.timestamp_format = timestamp_format
         self.fake = Faker()
         Faker.seed(seed)
 
