@@ -66,4 +66,4 @@ user    1m52.882s
 sys     0m17.771s
 ```
 
-In this example the test data (1,000,000 apache log lines) took 1m52 to produce into Kafka, and a throughput from the text source of 2.5MiB/s.
+In this example the test data (1,000,000 apache log lines) took 1m27 to produce into Kafka, and a throughput from the text source of 2.5MiB/s.

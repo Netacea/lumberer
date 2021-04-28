@@ -14,6 +14,7 @@ import streams as ImplementedSinks
 class AvailableSinks(str, Enum):
     s3 = "s3"
     kafka = "kafka"
+    confluent = "confluent"
     stdout = "stdout"
     files = "files"
 
