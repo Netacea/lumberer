@@ -2,6 +2,11 @@ import functools as _functools
 import threading as _threading
 import time
 from typing import Callable
+from random import randint
+from cachetools import TTLCache, cached
+from itertools import cycle
+import json
+from sys import exit
 
 
 def rate_limited(max_per_second: int) -> Callable:
@@ -40,12 +45,40 @@ def rate_limited(max_per_second: int) -> Callable:
 
 
 class Output:
-    def __init__(self, rate: int):
+    def __init__(self, rate: int, scheduling_data=None):
         self.rate = rate
+        if scheduling_data:
+            self._parse_schedule(scheduling_data)
+            self.rate_set = cycle(self.raw_rate)
+            self.ttlcache = TTLCache(1, ttl=self.ttl)
+
+    def _parse_schedule(self, scheduling_data):
+        try:
+            x = json.load(scheduling_data)
+            self.raw_rate = x["schedule"]
+            self.ttl = x["update_interval"]
+        except KeyError:
+            print("ERROR: Missing value in json file")
+            exit(1)
+        except json.decoder.JSONDecodeError:
+            print("ERROR: json is malformed")
+            exit(2)
+        except Exception as e:
+            raise e
+
+
+    def _rate_polling(self):
+        if self.rate:
+            return self.rate
+        else:
+            @cached(cache=self.ttlcache)
+            def subfunction(self):
+                return next(self.rate_set)
+            return subfunction(self)
 
     def send(self, logline):
-        if self.rate:
-            func = rate_limited(self.rate)(self._send)
+        if self.rate or self.ttl:
+            func = rate_limited(self._rate_polling())(self._send)
             func(logline)
         else:
             self._send(logline)

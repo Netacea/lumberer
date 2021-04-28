@@ -1,6 +1,6 @@
 from kafka import KafkaProducer
 from kafka.errors import KafkaError
-from output.base import Output
+from streams.base import Output
 
 
 class Kafka(Output):
