@@ -6,17 +6,17 @@ from web import Web
 import typer
 
 import generators as lg
-import output as sinks
+import output as ImplementedSinks
 
 
-class Sinks(str, Enum):
+class AvailableSinks(str, Enum):
     s3 = "s3"
     kafka = "kafka"
     stdout = "stdout"
     files = "files"
 
 
-class LogTypes(str, Enum):
+class AvailableLogTypes(str, Enum):
     apache = "Apache"
     cloudfront = "Cloudfront"
     cloudflare = "Cloudflare"
@@ -36,40 +36,36 @@ def version_callback(value: bool):
 @app.command()
 def stream(
     file: Optional[typer.FileText] = typer.Argument(sys.stdin),
-    output: Sinks = typer.Option(Sinks.stdout, case_sensitive=False),
+    output: AvailableSinks = typer.Option(AvailableSinks.stdout, case_sensitive=False),
     version: Optional[bool] = typer.Option(
         None, "--version", callback=version_callback, is_eager=True
     ),
+    rate: int = typer.Option(...),
 ):
     """Stream stdin to output sink."""
     with Web():
-        if output == Sinks.stdout:
-            with sinks.Stdout(rate=1) as out:
-                for line in file:
-                    out.send(line)
-        elif output == Sinks.kafka:
-            with sinks.Kafka(rate=1, broker="broker:9092", topic="my-topic") as kafka:
-                for line in file:
-                    kafka.send(line)
-        elif output == Sinks.s3:
-            with sinks.S3(rate=1, bucket="test", prefix="/test") as s3:
-                for line in file:
-                    s3.send(line)
-        elif output == Sinks.files:
-            with sinks.Files(rate=1) as local:
-                for line in file:
-                    local.send(line)
+        if output == AvailableSinks.stdout:
+            with ImplementedSinks.Stdout(rate=rate) as sink:
+                [sink.send(line) for line in file]                   
+        elif output == AvailableSinks.kafka:
+            with ImplementedSinks.Kafka(rate=rate, broker="broker:9092", topic="my-topic") as sink:
+                [sink.send(line) for line in file]
+        elif output == AvailableSinks.s3:
+            with ImplementedSinks.S3(rate=rate, bucket="test", prefix="/test") as sink:
+                [sink.send(line) for line in file]
+        elif output == AvailableSinks.files:
+            with ImplementedSinks.Files(rate=rate) as sink:
+                [sink.send(line) for line in file]
 
 
 @app.command()
 def generate(
-    log_type: LogTypes = typer.Option(..., case_sensitive=False),
+    log_type: AvailableLogTypes = typer.Option(..., case_sensitive=False),
     iterations: int = 1,
     version: Optional[bool] = typer.Option(
         None, "--version", callback=version_callback, is_eager=True
     ),
-    quiet: Optional[bool] = typer.Option(False),
-    rate: str = None,
+    quiet: Optional[bool] = typer.Option(False)
 ):
     """Generates log lines to stdout"""
 

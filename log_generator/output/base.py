@@ -1,10 +1,18 @@
 import functools as _functools
 import threading as _threading
 import time
+from typing import Callable
 
 
-def rate_limited(max_per_second: int):
-    """Rate-limits the decorated function locally, for one process."""
+def rate_limited(max_per_second: int) -> Callable:
+    """Rate limiting decorator
+
+    Args:
+        max_per_second (int): Rate the decorated function can execute.
+
+    Returns:
+        Callable: Decorated function.
+    """
     lock = _threading.Lock()
     min_interval = 1.0 / max_per_second
 
@@ -36,11 +44,11 @@ class Output:
         self.rate = rate
 
     def send(self, logline):
-        # if self.rate:
-        func = rate_limited(self.rate)(self._send)
-        func(logline)
-        # else:
-        #     self._send(logline)
+        if self.rate:
+            func = rate_limited(self.rate)(self._send)
+            func(logline)
+        else:
+            self._send(logline)
 
     def _send(self, logline):
         raise NotImplementedError
