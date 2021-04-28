@@ -1,0 +1,8 @@
+{
+    "update_interval": 10,
+    "schedule": [
+        10,
+        20,
+        1
+    ]
+}
