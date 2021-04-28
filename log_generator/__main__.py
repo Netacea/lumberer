@@ -44,18 +44,19 @@ def stream(
     """Stream stdin to output sink."""
     with Web():
         if output == Sinks.stdout:
-            for line in file:
-                sys.stdout.write(line)
+            with sinks.Stdout(rate=1) as out:
+                for line in file:
+                    out.send(line)
         elif output == Sinks.kafka:
-            with sinks.Kafka(broker="broker:9092", topic="my-topic") as kafka:
+            with sinks.Kafka(rate=1, broker="broker:9092", topic="my-topic") as kafka:
                 for line in file:
                     kafka.send(line)
         elif output == Sinks.s3:
-            with sinks.S3(bucket="test", prefix="/test") as s3:
+            with sinks.S3(rate=1, bucket="test", prefix="/test") as s3:
                 for line in file:
                     s3.send(line)
         elif output == Sinks.files:
-            with sinks.Files() as local:
+            with sinks.Files(rate=1) as local:
                 for line in file:
                     local.send(line)
 
@@ -67,11 +68,13 @@ def generate(
     version: Optional[bool] = typer.Option(
         None, "--version", callback=version_callback, is_eager=True
     ),
-    silent: Optional[bool] = typer.Option(False),
+    quiet: Optional[bool] = typer.Option(False),
+    rate: str = None,
 ):
     """Generates log lines to stdout"""
+
     log_generator = getattr(lg, log_type.value)
-    log_generator(iterations=iterations).render(file=sys.stdout, silent=silent)
+    log_generator(iterations=iterations).render(file=sys.stdout, quiet=quiet)
 
 
 if __name__ == "__main__":

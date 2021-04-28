@@ -1,9 +1,11 @@
 from kafka import KafkaProducer
 from kafka.errors import KafkaError
+from output.base import Output
 
 
-class Kafka:
-    def __init__(self, broker: list, topic: str):
+class Kafka(Output):
+    def __init__(self, broker: list, topic: str, rate: int = None):
+        super().__init__(rate=rate)
         self.bootstrap_servers = broker
         self.topic = topic
 

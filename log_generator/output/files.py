@@ -1,11 +1,17 @@
 from datetime import datetime, timezone
 from pathlib import Path
+from output.base import Output
 
 
-class Files:
+class Files(Output):
     def __init__(
-        self, path: str = ".", buffer_size: int = 1000, compressed: bool = False
+        self,
+        path: str = ".",
+        buffer_size: int = 1000,
+        compressed: bool = False,
+        rate: int = None,
     ):
+        super().__init__(rate=rate)
         self.compressed = compressed
         self.buffer_size = buffer_size
         self.path = path
@@ -19,9 +25,9 @@ class Files:
         self.write(f"{now}.log")
 
     def _compress(self, method: str = "gzip"):
-        pass
+        raise NotImplementedError
 
-    def send(self, logline: str):
+    def _send(self, logline: str):
         self.buffer.append(logline)
         if len(self.buffer) > self.buffer_size:
             now = datetime.utcnow().replace(tzinfo=timezone.utc).isoformat()

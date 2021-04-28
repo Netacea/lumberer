@@ -38,12 +38,12 @@ class LogRender:
             "uuid": fake.uuid4(),
         }
 
-    def render(self, file, silent):
+    def render(self, file, quiet, rate):
         def print_line(seed=0):
             x = self._seed_data(seed)
             print(self.generate(x), file=file)
 
-        if silent:
+        if quiet:
             for _ in range(self.iterations):
                 print_line()
         else:

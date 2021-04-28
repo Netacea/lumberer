@@ -1,16 +1,19 @@
 import boto3
 from botocore.exceptions import ClientError
 from datetime import datetime, timezone
+from output.base import Output
 
 
-class S3:
+class S3(Output):
     def __init__(
         self,
         bucket: str,
         prefix: str,
+        rate: int = None,
         buffer_size: int = 1000,
         compressed: bool = False,
     ):
+        super().__init__(rate=rate)
         self.compressed = compressed
         self.buffer_size = buffer_size
         self.bucket = bucket
@@ -27,7 +30,7 @@ class S3:
     def _compress(self, method: str = "gzip"):
         pass
 
-    def send(self, logline: str):
+    def _send(self, logline: str):
         self.buffer.append(logline)
         if len(self.buffer) > self.buffer_size:
             now = datetime.utcnow().replace(tzinfo=timezone.utc).isoformat()
