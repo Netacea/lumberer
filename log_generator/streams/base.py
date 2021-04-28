@@ -1,5 +1,6 @@
 import datetime as dt
 import functools as _functools
+import re
 import threading as _threading
 import time
 from typing import Callable
@@ -79,11 +80,25 @@ class Output:
                 return next(self.rate_set)
             return subfunction(self)
 
-    def _add_timestamp(self, logline, timestamp_format="%d/%b/%Y:%H:%M:%S +0000"):
-        return logline.replace(
-            "timestamp_to_interpolate",
-            dt.datetime.now().strftime(timestamp_format)
-        )
+    def _add_timestamp(self, logline):
+        """Replace the logline's format placeholder with a real timestamp
+
+            Args:
+                logline (str): the raw logline before real timestamp is added
+
+            Returns:
+                str - the logline with the current timestamp in target format
+        """
+        target_pattern = r"!!!(.+)!!!"
+        try:
+            target_format = re.search(target_pattern, logline).groups()[0]
+            new_timestamp = dt.datetime.now().strftime(target_format)
+            logline = re.sub(target_pattern, new_timestamp, logline)
+        except Exception as e:
+            print("WARNING: unable to insert real timestamp in line {}".format(logline))
+            print(e)
+        finally:
+            return logline
 
     def send(self, logline):
         logline = self._add_timestamp(logline)
