@@ -2,7 +2,6 @@ import sys
 from enum import Enum
 from typing import Optional
 
-from typer.params import Option
 from web import Web
 
 import typer
