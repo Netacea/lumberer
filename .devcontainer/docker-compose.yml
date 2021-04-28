@@ -10,6 +10,8 @@ services:
       # [Optional] You can use build args to set options. e.g. 'VARIANT' below affects the image in the Dockerfile
       args: 
         VARIANT: 3.9
+    cap_add:
+      - SYS_PTRACE
     container_name: log-generator
     volumes:
       - ..:/workspace:cached
