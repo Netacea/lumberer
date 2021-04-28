@@ -46,12 +46,14 @@ def rate_limited(max_per_second: int) -> Callable:
 
 
 class Output:
-    def __init__(self, rate: int, scheduling_data=None):
+    def __init__(self, rate: int = None, scheduling_data=None):
         self.rate = rate
+        self.ttl = None
         if scheduling_data:
             self._parse_schedule(scheduling_data)
             self.rate_set = cycle(self.raw_rate)
             self.ttlcache = TTLCache(1, ttl=self.ttl)
+
 
     def _parse_schedule(self, scheduling_data):
         try:
@@ -84,7 +86,7 @@ class Output:
         )
 
     def send(self, logline):
-        logline = _add_timestamp(logline)
+        logline = self._add_timestamp(logline)
         if self.rate or self.ttl:
             func = rate_limited(self._rate_polling())(self._send)
             func(logline)

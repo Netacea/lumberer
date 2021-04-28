@@ -15,7 +15,6 @@ class LogRender:
             # "index": index,
             "ip_address": fake.ipv4_public(),
             "user_name": fake.random_element(elements=("-", fake.user_name())),
-            "date_time": fake.date_time(),
             "http_method": fake.http_method(),
             "uri_path": fake.uri_path(),
             "uri_query_params": fake.random_element(
@@ -38,7 +37,7 @@ class LogRender:
             "uuid": fake.uuid4(),
         }
 
-    def render(self, file, quiet, rate):
+    def render(self, file, quiet):
         def print_line(seed=0):
             x = self._seed_data(seed)
             print(self.generate(x), file=file)

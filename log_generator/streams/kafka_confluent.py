@@ -6,10 +6,10 @@ from confluent_kafka import (
     TopicPartition,
 )
 
-from output.base import BaseSink
+from streams.base import Output
 
 
-class ConfluentKafka(BaseSink):
+class ConfluentKafka(Output):
     def __init__(self, broker: list, topic: str):
         self.bootstrap_servers = broker
         self.topic = topic
