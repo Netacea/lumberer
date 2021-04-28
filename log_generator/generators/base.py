@@ -4,8 +4,14 @@ import sys
 
 
 class LogRender:
-    def __init__(self, iterations: int = 1, seed: int = 4321):
+    def __init__(
+        self,
+        iterations: int = 1,
+        seed: int = 4321,
+        timestamp_format: str = "%Y-%m-%dT%H:%M:%S",
+    ):
         self.iterations = iterations
+        self.timestamp_format = timestamp_format
         self.fake = Faker()
         Faker.seed(seed)
 
@@ -15,7 +21,6 @@ class LogRender:
             # "index": index,
             "ip_address": fake.ipv4_public(),
             "user_name": fake.random_element(elements=("-", fake.user_name())),
-            "date_time": fake.date_time(),
             "http_method": fake.http_method(),
             "uri_path": fake.uri_path(),
             "uri_query_params": fake.random_element(
@@ -38,12 +43,12 @@ class LogRender:
             "uuid": fake.uuid4(),
         }
 
-    def render(self, file, silent):
+    def render(self, file, quiet):
         def print_line(seed=0):
             x = self._seed_data(seed)
             print(self.generate(x), file=file)
 
-        if silent:
+        if quiet:
             for _ in range(self.iterations):
                 print_line()
         else:
