@@ -1,14 +1,14 @@
 import datetime as dt
 import functools as _functools
+import json
 import re
 import threading as _threading
 import time
-from typing import Callable
-from random import randint
-from cachetools import TTLCache, cached
 from itertools import cycle
-import json
 from sys import exit
+from typing import Callable
+
+from cachetools import TTLCache, cached
 
 
 def rate_limited(max_per_second: int) -> Callable:
@@ -55,7 +55,6 @@ class Output:
             self.rate_set = cycle(self.raw_rate)
             self.ttlcache = TTLCache(1, ttl=self.ttl)
 
-
     def _parse_schedule(self, scheduling_data):
         try:
             x = json.load(scheduling_data)
@@ -70,24 +69,25 @@ class Output:
         except Exception as e:
             raise e
 
-
     def _rate_polling(self):
         if self.rate:
             return self.rate
         else:
+
             @cached(cache=self.ttlcache)
             def subfunction(self):
                 return next(self.rate_set)
+
             return subfunction(self)
 
     def _add_timestamp(self, logline: str):
         """Replace the logline's format placeholder with a real timestamp
 
-            Args:
-                logline (str): the raw logline before real timestamp is added
+        Args:
+            logline (str): the raw logline before real timestamp is added
 
-            Returns:
-                str - the logline with the current timestamp in target format
+        Returns:
+            str - the logline with the current timestamp in target format
         """
         target_pattern = r"!!!(.+)!!!"
         try:
@@ -102,12 +102,12 @@ class Output:
 
     def send(self, logline: str):
         """Docstring
-        
-            Args:
-                logline (str): the logline to send
 
-            Returns:
-                None
+        Args:
+            logline (str): the logline to send
+
+        Returns:
+            None
         """
         logline = self._add_timestamp(logline)
         if self.rate or self.ttl:

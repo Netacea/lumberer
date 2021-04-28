@@ -18,6 +18,7 @@ class S3(Output):
         self.buffer_size = buffer_size
         self.bucket = bucket
         self.prefix = prefix
+        self.s3 = boto3.resource("s3")
 
     def __enter__(self, buffer_size=1000):
         self.buffer = []
@@ -37,6 +38,5 @@ class S3(Output):
             self.write(f"{now}.log")
 
     def write(self, key: str):
-        with open(key, "w") as file:
-            file.write("".join(self.buffer))
-        self.buffer = []
+        s3_object = self.s3.Object(self.bucket, f"{self.prefix}{key}")
+        s3_object.put(Body="".join(self.buffer))
