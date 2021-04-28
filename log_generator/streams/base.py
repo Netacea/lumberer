@@ -79,7 +79,7 @@ class Output:
                 return next(self.rate_set)
             return subfunction(self)
 
-    def _add_timestamp(self, logline, timestamp_format="%Y-%m-%dT%H:%M:%S"):
+    def _add_timestamp(self, logline, timestamp_format="%d/%b/%Y:%H:%M:%S +0000"):
         return logline.replace(
             "timestamp_to_interpolate",
             dt.datetime.now().strftime(timestamp_format)
