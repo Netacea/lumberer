@@ -39,8 +39,6 @@ class ConfluentKafka(Output):
             raise
 
     def send(self, logline: str):
-        logline = super().add_timestamp(logline)
-
         try:
             self.producer.produce(self.topic, logline.encode("UTF-8"))
             self.producer.poll(0)
