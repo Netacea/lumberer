@@ -26,12 +26,15 @@ class Files(Output):
         self.compressed = compressed
         self.buffer_size = buffer_size
         self.path = path
-
-    def __enter__(self, buffer_size=1000):
         self.buffer = []
+
+    def __enter__(self):
         return self
 
     def __exit__(self, type, value, traceback):
+        self.close()
+
+    def close(self):
         now = datetime.utcnow().replace(tzinfo=timezone.utc).isoformat()
         self.write(f"{now}.log")
 

@@ -4,7 +4,7 @@ from generators.base import LogRender
 class Cloudflare(LogRender):
     def __init__(self, iterations, realtime, baddata):
         super().__init__(iterations, realtime, baddata)
-        self.timestamp_format="%Y-%m-%dT%H:%M:%SZ"
+        self.timestamp_format = "%Y-%m-%dT%H:%M:%SZ"
 
     def generate(self, d: dict) -> str:
         """Generate Cloudflare Log format string.

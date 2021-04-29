@@ -110,7 +110,10 @@ def generate(
         False, "-r", "--realtime", help="Interpolate current timestamps in log lines."
     ),
     baddata: Optional[float] = typer.Option(
-        None, "-b", "--baddata", help="Generate percentage of bad data to mix in with good data (e.g. 50 = 50%)"
+        None,
+        "-b",
+        "--baddata",
+        help="Generate percentage of bad data to mix in with good data (e.g. 50 = 50%)",
     ),
     version: Optional[bool] = typer.Option(
         None,

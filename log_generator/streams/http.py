@@ -12,12 +12,15 @@ class HTTP(Output):
         """
         super().__init__(rate=rate, schedule=schedule)
         self.url = url
+        self.client = httpx.Client(http2=True)
 
     def __enter__(self):
-        self.client = httpx.Client(http2=True)
         return self
 
     def __exit__(self, type, value, traceback):
+        self.close()
+
+    def close(self):
         self.client.close()
 
     def send(self, logline: str):

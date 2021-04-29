@@ -1,6 +1,5 @@
 import functools as _functools
 import json
-import re
 import threading as _threading
 import time
 from itertools import cycle

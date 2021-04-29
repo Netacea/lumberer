@@ -1,9 +1,14 @@
-import sys
 import datetime as dt
 from faker import Faker
-from typer import progressbar
 from cachetools import TTLCache, cached
 from random import choices
+from tqdm import trange, tqdm
+from loguru import logger
+
+# Remove standard handler and write loguru lines via tqdm.write
+logger.remove()
+logger.add(lambda msg: tqdm.write(msg, end=""))
+
 
 valid_log_data_cache = TTLCache(1, 1)
 bad_log_data_cache = TTLCache(1, 1)
@@ -15,7 +20,7 @@ class LogRender:
     ):
         self.iterations = iterations
         self.realtime = realtime
-        self.baddata = baddata
+        self.junk_percentage = baddata
         self.init_timestamp = dt.datetime.now()
         self.fake = Faker()
         Faker.seed(seed)
@@ -138,12 +143,16 @@ class LogRender:
         )
 
     def render(self, file, quiet):
-        def print_line(data=None):
-            if not self.baddata:
+        def write(data=None):
+            if not self.junk_percentage:
                 data = self._seed_data(self.fake, self.realtime, self.init_timestamp)
             else:
                 if bool(
-                    choices([0, 1], weights=[self.baddata, 100 - self.baddata], k=1)[0]
+                    choices(
+                        [0, 1],
+                        weights=[self.junk_percentage, 100 - self.junk_percentage],
+                        k=1,
+                    )[0]
                 ):
                     data = self._seed_data(
                         self.fake, self.realtime, self.init_timestamp
@@ -154,16 +163,7 @@ class LogRender:
                     )
             print(self.generate(data), file=file)
 
-        if quiet:
-            for _ in range(self.iterations):
-                print_line()
-        else:
-            with progressbar(
-                range(self.iterations),
-                label="Progress:",
-                file=sys.stderr,
-                fill_char="█",
-                empty_char=" ",
-            ) as progress:
-                for value in progress:
-                    print_line()
+        for _ in trange(
+            self.iterations, disable=quiet, unit="lines", desc="Generating"
+        ):
+            write()

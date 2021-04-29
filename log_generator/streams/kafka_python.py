@@ -18,14 +18,17 @@ class Kafka(Output):
         super().__init__(rate=rate, schedule=schedule)
         self.bootstrap_servers = broker
         self.topic = topic
-
-    def __enter__(self):
         self.producer = KafkaProducer(
             bootstrap_servers=self.bootstrap_servers, linger_ms=100
         )
+
+    def __enter__(self):
         return self
 
     def __exit__(self, type, value, traceback):
+        self.close()
+
+    def close(self):
         try:
             self.producer.flush(10)
         except Exception:

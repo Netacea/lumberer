@@ -29,8 +29,6 @@ class ConfluentKafka(Output):
         super().__init__(rate=rate, schedule=schedule)
         self.bootstrap_servers = broker
         self.topic = topic
-
-    def __enter__(self):
         self.producer = Producer(
             {
                 "bootstrap.servers": ",".join(self.bootstrap_servers),
@@ -45,9 +43,14 @@ class ConfluentKafka(Output):
                 # "throttle_cb": logger.debug,
             }
         )
+
+    def __enter__(self):
         return self
 
     def __exit__(self, type, value, traceback):
+        self.close()
+
+    def close(self):
         try:
             self.producer.flush(10)
         except Exception:
@@ -65,7 +68,12 @@ class ConfluentKafka(Output):
 
 class ConfluentKafkaMP(Output):
     def __init__(
-        self, broker: list, topic: str, rate: int = None, schedule: dict = None
+        self,
+        broker: list,
+        topic: str,
+        rate: int = None,
+        schedule: dict = None,
+        buffer_size: int = 100000,
     ):
         """Kafka sink using the confluent_kafka library and multiprocessing.
 
@@ -101,16 +109,19 @@ class ConfluentKafkaMP(Output):
             )
             for idx in range(self.partition_count)
         ]
-
-    def __enter__(self, buffer_size: int = 100000):
         self.buffer_size = buffer_size
         self.message_buffer = []
         for proc in self.producers:
             proc.daemon = True
             proc.start()
+
+    def __enter__(self):
         return self
 
     def __exit__(self, type, value, traceback):
+        self.close()
+
+    def close(self):
         try:
             self.producer_queue.put(self.message_buffer)
             while not self.producer_queue.empty():

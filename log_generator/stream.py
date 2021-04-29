@@ -2,13 +2,18 @@
 
 import sys
 from enum import Enum
-from typing import Optional, List
-
-from web import Web
+from typing import List, Optional
 
 import typer
+from loguru import logger
+from tqdm import tqdm, trange
 
 import streams as ImplementedSinks
+from web import Web
+
+# Remove standard handler and write loguru lines via tqdm.write
+logger.remove()
+logger.add(lambda msg: tqdm.write(msg, end=""))
 
 
 class AvailableKafkaProducers(str, Enum):
@@ -64,10 +69,21 @@ def kafka_sinks(
         None, "-s", "--schedule", help="Path to json file to schedule rate limits."
     ),
 ):
-    with ImplementedSinks.ConfluentKafka(
-        rate=rate, schedule=schedule, broker=broker, topic=topic
-    ) as sink:
-        [sink.send(line) for line in inputfile]
+    if producer == AvailableKafkaProducers.kafka_confluent:
+        sink = ImplementedSinks.ConfluentKafka(
+            rate=rate, schedule=schedule, broker=broker, topic=topic
+        )
+    if producer == AvailableKafkaProducers.kafka_confluent_mp:
+        sink = ImplementedSinks.ConfluentKafkaMP(
+            rate=rate, schedule=schedule, broker=broker, topic=topic
+        )
+    if producer == AvailableKafkaProducers.kafka_python:
+        sink = ImplementedSinks.Kafka(
+            rate=rate, schedule=schedule, broker=broker, topic=topic
+        )
+
+    [sink.send(line) for line in inputfile]
+    sink.close()
 
 
 @app.command("s3")

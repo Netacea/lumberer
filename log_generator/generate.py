@@ -7,7 +7,6 @@ from typing import Optional
 from web import Web
 
 import typer
-
 import generators
 
 
@@ -35,7 +34,10 @@ def generate(
         False, "-r", "--realtime", help="Interpolate current timestamps in log lines."
     ),
     baddata: Optional[float] = typer.Option(
-        None, "-b", "--baddata", help="Generate percentage of bad data to mix in with good data (e.g. 50 = 50%)"
+        None,
+        "-b",
+        "--baddata",
+        help="Generate percentage of bad data to mix in with good data (e.g. 50 = 50%)",
     ),
 ):
     """Generates log lines to stdout."""
