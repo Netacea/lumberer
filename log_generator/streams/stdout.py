@@ -3,8 +3,8 @@ from streams.base import Output
 
 
 class Stdout(Output):
-    def __init__(self, rate: int = None, scheduling_data=None):
-        super().__init__(rate=rate, scheduling_data=scheduling_data)
+    def __init__(self, rate: int = None, schedule=None):
+        super().__init__(rate=rate, schedule=schedule)
 
     def __enter__(self):
         return self

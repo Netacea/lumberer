@@ -10,8 +10,19 @@ class Files(Output):
         buffer_size: int = 1000,
         compressed: bool = False,
         rate: int = None,
+        schedule: dict = None,
     ):
-        super().__init__(rate=rate)
+        """Local Filesystem Sink.
+
+        Writes files locally with a given path (must already exist).
+
+        Args:
+            path (str, optional): Path to directory you want to stream to. Defaults to ".".
+            buffer_size (int, optional): Lines per file. Defaults to 1000.
+            compressed (bool, optional): Should the files be compressed or not. Defaults to False.
+            rate (int, optional): [description]. Defaults to None.
+        """
+        super().__init__(rate=rate, schedule=schedule)
         self.compressed = compressed
         self.buffer_size = buffer_size
         self.path = path

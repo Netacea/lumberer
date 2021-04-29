@@ -53,7 +53,7 @@ def stream(
     rate: Optional[int] = typer.Option(
         None, "-r", "--rate", help="Rate-limit line generation per second."
     ),
-    scheduling_data: Optional[typer.FileText] = typer.Option(
+    schedule: Optional[typer.FileText] = typer.Option(
         None, "-s", "--schedule", help="Path to json file to schedule rate limits."
     ),
     version: Optional[bool] = typer.Option(
@@ -68,30 +68,30 @@ def stream(
     """This tool takes text input, new line seperated and streams it to a sink."""
     with Web():
         if outputsink == AvailableSinks.stdout:
-            with ImplementedSinks.Stdout(
-                rate=rate, scheduling_data=scheduling_data
-            ) as sink:
+            with ImplementedSinks.Stdout(rate=rate, schedule=schedule) as sink:
                 [sink.send(line) for line in inputfile]
         elif outputsink == AvailableSinks.kafka:
             with ImplementedSinks.Kafka(
-                rate=rate, broker=["broker:9092"], topic="my-topic"
+                rate=rate, schedule=schedule, broker=["broker:9092"], topic="my-topic"
             ) as sink:
                 [sink.send(line) for line in inputfile]
         elif outputsink == AvailableSinks.confluent:
             with ImplementedSinks.ConfluentKafka(
-                rate=rate, broker=["broker:9092"], topic="my-topic"
+                rate=rate, schedule=schedule, broker=["broker:9092"], topic="my-topic"
             ) as sink:
                 [sink.send(line) for line in inputfile]
         elif outputsink == AvailableSinks.confluentmp:
             with ImplementedSinks.ConfluentKafkaMP(
-                rate=rate, broker=["broker:9092"], topic="my-topic"
+                rate=rate, schedule=schedule, broker=["broker:9092"], topic="my-topic"
             ) as sink:
                 [sink.send(line) for line in inputfile]
         elif outputsink == AvailableSinks.s3:
-            with ImplementedSinks.S3(rate=rate, bucket="test", prefix="/test") as sink:
+            with ImplementedSinks.S3(
+                rate=rate, schedule=schedule, bucket="test", prefix="/test"
+            ) as sink:
                 [sink.send(line) for line in inputfile]
         elif outputsink == AvailableSinks.files:
-            with ImplementedSinks.Files(rate=rate) as sink:
+            with ImplementedSinks.Files(rate=rate, schedule=schedule) as sink:
                 [sink.send(line) for line in inputfile]
 
 

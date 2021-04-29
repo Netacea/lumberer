@@ -15,8 +15,10 @@ from streams.base import Output
 
 
 class ConfluentKafka(Output):
-    def __init__(self, broker: list, topic: str, rate: int):
-        super().__init__(rate=rate)
+    def __init__(
+        self, broker: list, topic: str, rate: int = None, schedule: dict = None
+    ):
+        super().__init__(rate=rate, schedule=schedule)
         self.bootstrap_servers = broker
         self.topic = topic
 

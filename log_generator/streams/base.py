@@ -47,17 +47,17 @@ def rate_limited(max_per_second: int) -> Callable:
 
 
 class Output:
-    def __init__(self, rate: int = None, scheduling_data=None):
+    def __init__(self, rate: int = None, schedule=None):
         self.rate = rate
         self.ttl = None
-        if scheduling_data:
-            self._parse_schedule(scheduling_data)
+        if schedule:
+            self._parse_schedule(schedule)
             self.rate_set = cycle(self.raw_rate)
             self.ttlcache = TTLCache(1, ttl=self.ttl)
 
-    def _parse_schedule(self, scheduling_data):
+    def _parse_schedule(self, schedule):
         try:
-            x = json.load(scheduling_data)
+            x = json.load(schedule)
             self.raw_rate = x["schedule"]
             self.ttl = x["update_interval"]
         except KeyError:
@@ -69,7 +69,12 @@ class Output:
         except Exception as e:
             raise e
 
-    def _rate_polling(self):
+    def _rate_polling(self) -> int:
+        """Rate limiting the send method.
+
+        Returns:
+            int: Log lines per second
+        """
         if self.rate:
             return self.rate
         else:
@@ -87,7 +92,7 @@ class Output:
             logline (str): the raw logline before real timestamp is added
 
         Returns:
-            str - the logline with the current timestamp in target format
+            str: The logline with the current timestamp in target format
         """
         target_pattern = r"!!!(.+)!!!"
         try:
@@ -101,15 +106,15 @@ class Output:
             return logline
 
     def send(self, logline: str):
-        """Docstring
+        """Sent log line to sink.
 
         Args:
-            logline (str): the logline to send
+            logline (str): the logline to send.
 
         Returns:
             None
         """
-        logline = self._add_timestamp(logline)
+        # logline = self._add_timestamp(logline)
         if self.rate or self.ttl:
             func = rate_limited(self._rate_polling())(self._send)
             func(logline)

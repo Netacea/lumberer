@@ -10,10 +10,11 @@ class S3(Output):
         bucket: str,
         prefix: str,
         rate: int = None,
+        schedule: dict = None,
         buffer_size: int = 1000,
         compressed: bool = False,
     ):
-        super().__init__(rate=rate)
+        super().__init__(rate=rate, schedule=schedule)
         self.compressed = compressed
         self.buffer_size = buffer_size
         self.bucket = bucket

@@ -3,14 +3,14 @@ import httpx
 
 
 class HTTP(Output):
-    def __init__(self, url: str, rate: int = 1):
+    def __init__(self, url: str, rate: int = 1, schedule: dict = None):
         """Synchronous HTTP client for submitting logs.
 
         Args:
             url (str): URL of endpoint to POST to.
             rate (int, optional): Submissions per second rate limiter. Defaults to 1.
         """
-        super().__init__(rate=rate)
+        super().__init__(rate=rate, schedule=schedule)
         self.url = url
 
     def __enter__(self):
