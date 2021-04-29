@@ -1,5 +1,7 @@
 # Netacea Log Generator
 
+![splash](docs/splash.gif) 
+
 ## Requirements 
 
 ### Functional Requirements
