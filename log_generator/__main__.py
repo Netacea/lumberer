@@ -109,6 +109,9 @@ def generate(
     realtime: Optional[bool] = typer.Option(
         False, "-r", "--realtime", help="Interpolate current timestamps in log lines."
     ),
+    baddata: Optional[bool] = typer.Option(
+        False, "-b", "--baddata", help="Generate bad data examples to test parser"
+    ),
     version: Optional[bool] = typer.Option(
         None,
         "-v",
@@ -121,7 +124,9 @@ def generate(
     """Generates log lines to stdout."""
 
     log_generator = getattr(generators, log_type.value)
-    log_generator(iterations=iterations).render(file=sys.stdout, quiet=quiet)
+    log_generator(iterations=iterations, realtime=realtime, baddata=baddata).render(
+        file=sys.stdout, quiet=quiet
+    )
 
 
 if __name__ == "__main__":

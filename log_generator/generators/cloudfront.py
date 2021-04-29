@@ -2,9 +2,9 @@ from generators.base import LogRender
 
 
 class Cloudfront(LogRender):
-    def __init__(self, iterations):
-        super().__init__(iterations)
-        self.timestamp_format="%Y-%m-%d %H:%M:%S"
+    def __init__(self, iterations, realtime, baddata):
+        super().__init__(iterations, realtime, baddata)
+        self.timestamp_format = "%Y-%m-%d %H:%M:%S"
 
     def generate(self, d: dict) -> str:
         """Generate Cloudfront Log format string.
@@ -27,4 +27,4 @@ class Cloudfront(LogRender):
         fle_status = "-"
         fle_encrypted_fields = "-"
         return f"""{d["timestamp"].strftime(self.timestamp_format)} {x_edge_location} {d["transfer_size"]} {d["ip_address"]} {d["http_method"]} {cloudfront_host} {d["uri_path"]} {d["http_status"]} {d["referer"]} {d["user_agent"]} {d["uri_query_params"]} {d["user_name"]} {x_edge_result_type} {x_edge_request_id} {x_host_header} {d["http_protocol"]} {d["transfer_size"]} {d["request_time"]} {x_forwarded_for} (ssl_protocol) {ssl_cipher} {x_edge_response_result_type} {d["http_protocol"]} {fle_status} {fle_encrypted_fields}
-""" # noqa: E501
+"""  # noqa: E501
