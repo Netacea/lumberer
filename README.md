@@ -82,3 +82,10 @@ E.g. ```-baddata 50``` would give you roughly 50% corrupted data in your sample.
 ```
 256.500.301.9000 - - [29/Apr/2021:15:28:31 +0000] "BLAH /!?£$%^&*()-_category/tags/list-----=two&f=1 HTTP/5.0" 603 "!?£$%^&*()-_http://stein.com/" "!£$%^&*()-_+Mozilla/5.0 (iPod; U; CPU iPhone OS 3_3 like Mac OS X; ur-PK) AppleWebKit/531.32.3 (KHTML, like Gecko) Version/3.0.5 Mobile/8B115 Safari/6531.32.3"
 ```
+## FOR SOME REAL SPEEEEEED
+
+To utilise all threads on the machine, use the following command.
+
+```cat /proc/cpuinfo | grep processor | xargs -n 1 -P 0 bash -c "generate --logtype apache --iterations 100000 --quiet" | stream kafka --broker broker:9092 --topic test123 ```
+
+See [xargs man page](https://man7.org/linux/man-pages/man1/xargs.1.html) for more details.
