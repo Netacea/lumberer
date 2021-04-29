@@ -16,8 +16,10 @@ class AvailableKafkaProducers(str, Enum):
     kafka_python = "kafka-python"
     kafka_confluent = "kafka-confluent"
     kafka_confluent_mp = "kafka-confluent-multiprocessing"
-    
+
+
 app = typer.Typer()
+
 
 @app.command("stdout")
 def stdout_sink(
@@ -31,7 +33,7 @@ def stdout_sink(
     ),
     schedule: Optional[typer.FileText] = typer.Option(
         None, "-s", "--schedule", help="Path to json file to schedule rate limits."
-    )
+    ),
 ):
     with ImplementedSinks.Stdout(rate=rate, schedule=schedule) as sink:
         [sink.send(line) for line in inputfile]
@@ -45,17 +47,16 @@ def kafka_sinks(
         help="Path to textfile to stream, defaults to stdin pipe if none given.",
     ),
     broker: List[str] = typer.Option(
-        ..., help="Kafka broker to connect to. Use flag multiple times for multiple brokers."
+        ...,
+        help="Kafka broker to connect to. Use flag multiple times for multiple brokers.",
     ),
-    topic: str = typer.Option(
-        ..., help="Kafka topic to send to."
-    ),
+    topic: str = typer.Option(..., help="Kafka topic to send to."),
     producer: AvailableKafkaProducers = typer.Option(
         AvailableKafkaProducers.kafka_confluent,
         "-p",
         "--producer",
         case_sensitive=False,
-        help="Kafka producer implementation to use."
+        help="Kafka producer implementation to use.",
     ),
     rate: Optional[int] = typer.Option(
         None, "-r", "--rate", help="Rate-limit line generation per second."
@@ -65,7 +66,7 @@ def kafka_sinks(
     ),
 ):
     with ImplementedSinks.ConfluentKafka(
-                rate=rate, schedule=schedule, broker=broker, topic=topic
+        rate=rate, schedule=schedule, broker=broker, topic=topic
     ) as sink:
         [sink.send(line) for line in inputfile]
 
@@ -77,22 +78,17 @@ def s3_sink(
         show_default=False,
         help="Path to textfile to stream, defaults to stdin pipe if none given.",
     ),
-    bucket: str = typer.Option(
-        ..., help="The S3 bucket to write to."
-    ),
-    prefix: str = typer.Option(
-        ..., help="Prefix for the S3 key."
-    ),
+    bucket: str = typer.Option(..., help="The S3 bucket to write to."),
+    prefix: str = typer.Option(..., help="Prefix for the S3 key."),
     rate: Optional[int] = typer.Option(
         None, "-r", "--rate", help="Rate-limit line generation per second."
     ),
     schedule: Optional[typer.FileText] = typer.Option(
         None, "-s", "--schedule", help="Path to json file to schedule rate limits."
     ),
-    
 ):
     with ImplementedSinks.S3(
-                bucket=bucket, prefix=prefix, rate=rate, schedule=schedule
+        bucket=bucket, prefix=prefix, rate=rate, schedule=schedule
     ) as sink:
         [sink.send(line) for line in inputfile]
 
@@ -110,11 +106,9 @@ def files_sink(
     schedule: Optional[typer.FileText] = typer.Option(
         None, "-s", "--schedule", help="Path to json file to schedule rate limits."
     ),
-    
 ):
     with ImplementedSinks.Files(rate=rate, schedule=schedule) as sink:
         [sink.send(line) for line in inputfile]
-
 
 
 if __name__ == "__main__":

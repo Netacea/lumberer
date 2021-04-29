@@ -10,12 +10,15 @@ import typer
 
 import generators
 
+
 class AvailableLogTypes(str, Enum):
     apache = "Apache"
     cloudfront = "Cloudfront"
     cloudflare = "Cloudflare"
 
+
 app = typer.Typer()
+
 
 @app.command()
 def generate(
@@ -30,12 +33,14 @@ def generate(
     ),
     realtime: Optional[bool] = typer.Option(
         False, "-r", "--realtime", help="Interpolate current timestamps in log lines."
-    )
+    ),
 ):
     """Generates log lines to stdout."""
 
     log_generator = getattr(generators, log_type.value)
-    log_generator(iterations=iterations, realtime=realtime).render(file=sys.stdout, quiet=quiet)
+    log_generator(iterations=iterations, realtime=realtime).render(
+        file=sys.stdout, quiet=quiet
+    )
 
 
 if __name__ == "__main__":
