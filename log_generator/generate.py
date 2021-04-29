@@ -35,7 +35,7 @@ def generate(
     """Generates log lines to stdout."""
 
     log_generator = getattr(generators, log_type.value)
-    log_generator(iterations=iterations).render(file=sys.stdout, quiet=quiet)
+    log_generator(iterations=iterations, realtime=realtime).render(file=sys.stdout, quiet=quiet)
 
 
 if __name__ == "__main__":

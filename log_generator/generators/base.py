@@ -7,9 +7,9 @@ import sys
 class LogRender:
     def __init__(
         self,
-        iterations: int = 1,
-        seed: int = 4321,
-        realtime: bool = True
+        iterations: int,
+        realtime: bool,
+        seed: int = 4321
     ):
         self.iterations = iterations
         self.realtime = realtime
