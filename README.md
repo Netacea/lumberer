@@ -4,11 +4,11 @@
 
 ### Functional Requirements
 - [x] Generate logs
-- [ ] To be used by multiple parsers
+- [x] To be used by multiple parsers
 - [x] Output to multiple sinks
 
 ### Non Functional Requirements
-- [ ] "Benchmark mode"
+- [x] "Benchmark mode"
 - [ ] Add some unexpected data
 - [x] Pacing of outputing data -> Scheduling in the future
 - [x] Handle a lot of data
