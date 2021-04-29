@@ -50,7 +50,7 @@ However you can redirect the output of `generate` to a file:
 
 Additionally you can feed a file into the streamer, and this is useful if you want to create a reproduceable log, or stream a log to the sink quicker than you can generate new log lines:
 
-```python log_generator stream --file apache.log --output kafka```
+```python log_generator stream --output kafka apache.log```
 
 ## Benchmarking Kafka
 

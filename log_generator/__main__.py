@@ -14,6 +14,7 @@ class AvailableSinks(str, Enum):
     s3 = "s3"
     kafka = "kafka"
     confluent = "confluent"
+    confluentmp = "confluentmp"
     stdout = "stdout"
     files = "files"
 
@@ -40,26 +41,20 @@ def stream(
     inputfile: Optional[typer.FileText] = typer.Argument(
         sys.stdin,
         show_default=False,
-        help="Path to textfile to stream, defaults to stdin pipe if none given."
+        help="Path to textfile to stream, defaults to stdin pipe if none given.",
     ),
     outputsink: AvailableSinks = typer.Option(
         AvailableSinks.stdout,
         "-o",
         "--output",
         case_sensitive=False,
-        help="Sink to stream data to."
+        help="Sink to stream data to.",
     ),
     rate: Optional[int] = typer.Option(
-        None,
-        "-r",
-        "--rate",
-        help="Rate-limit line generation per second."
+        None, "-r", "--rate", help="Rate-limit line generation per second."
     ),
     scheduling_data: Optional[typer.FileText] = typer.Option(
-        None,
-        "-s",
-        "--schedule",
-        help="Path to json file to schedule rate limits."
+        None, "-s", "--schedule", help="Path to json file to schedule rate limits."
     ),
     version: Optional[bool] = typer.Option(
         None,
@@ -67,11 +62,10 @@ def stream(
         "--version",
         is_eager=True,
         callback=version_callback,
-        help="Show tool version."
+        help="Show tool version.",
     ),
 ):
-    """This tool takes text input, new line seperated and streams it to a sink.
-    """
+    """This tool takes text input, new line seperated and streams it to a sink."""
     with Web():
         if outputsink == AvailableSinks.stdout:
             with ImplementedSinks.Stdout(
@@ -80,7 +74,17 @@ def stream(
                 [sink.send(line) for line in inputfile]
         elif outputsink == AvailableSinks.kafka:
             with ImplementedSinks.Kafka(
-                rate=rate, broker="broker:9092", topic="my-topic"
+                rate=rate, broker=["broker:9092"], topic="my-topic"
+            ) as sink:
+                [sink.send(line) for line in inputfile]
+        elif outputsink == AvailableSinks.confluent:
+            with ImplementedSinks.ConfluentKafka(
+                rate=rate, broker=["broker:9092"], topic="my-topic"
+            ) as sink:
+                [sink.send(line) for line in inputfile]
+        elif outputsink == AvailableSinks.confluentmp:
+            with ImplementedSinks.ConfluentKafkaMP(
+                rate=rate, broker=["broker:9092"], topic="my-topic"
             ) as sink:
                 [sink.send(line) for line in inputfile]
         elif outputsink == AvailableSinks.s3:
@@ -94,23 +98,13 @@ def stream(
 @app.command()
 def generate(
     log_type: AvailableLogTypes = typer.Option(
-        ...,
-        "-l",
-        "--logtype",
-        case_sensitive=False,
-        help="Type of log to generate."
+        ..., "-l", "--logtype", case_sensitive=False, help="Type of log to generate."
     ),
     iterations: int = typer.Option(
-        1,
-        "-i",
-        "--iterations",
-        help="Iterations of log lines to generate."
+        1, "-i", "--iterations", help="Iterations of log lines to generate."
     ),
     quiet: Optional[bool] = typer.Option(
-        False,
-        "-q",
-        "--quiet",
-        help="Hide the progress bar."
+        False, "-q", "--quiet", help="Hide the progress bar."
     ),
     version: Optional[bool] = typer.Option(
         None,
@@ -118,11 +112,10 @@ def generate(
         "--version",
         callback=version_callback,
         is_eager=True,
-        help="Show tool version."
+        help="Show tool version.",
     ),
 ):
-    """Generates log lines to stdout.
-    """
+    """Generates log lines to stdout."""
 
     log_generator = getattr(generators, log_type.value)
     log_generator(iterations=iterations).render(file=sys.stdout, quiet=quiet)

@@ -37,7 +37,7 @@ At completion of iterating through the array, it'll cycle back the beginning and
 
 
 ```bash
-vscode ➜ /workspace (confluent ✗) $ python log_generator generate --log-type apache --iterations 10000 | python log_generator stream --output kafka --scheduling-data testdata/test.json 
+vscode ➜ /workspace (confluent ✗) $ python log_generator generate --log-type apache --iterations 10000 | python log_generator stream --output kafka --schedule testdata/simpleshedule.json
 Progress:  [█                                   ]    3%  01:54:18
 ```
 
