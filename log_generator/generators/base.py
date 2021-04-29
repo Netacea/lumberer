@@ -1,3 +1,4 @@
+import datetime as dt
 from faker import Faker
 from typer import progressbar
 import sys
@@ -8,17 +9,23 @@ class LogRender:
         self,
         iterations: int = 1,
         seed: int = 4321,
-        timestamp_format: str = "%Y-%m-%dT%H:%M:%S",
+        realtime: bool = True
     ):
         self.iterations = iterations
-        self.timestamp_format = timestamp_format
+        self.realtime = realtime
+        self.init_timestamp = dt.datetime.now()
         self.fake = Faker()
         Faker.seed(seed)
 
     def _seed_data(self, index=None):
         fake = self.fake
+        if self.realtime:
+            timestamp = dt.datetime.now()
+        else:
+            timestamp = self.init_timestamp
         return {
             # "index": index,
+            "timestamp": timestamp,
             "ip_address": fake.ipv4_public(),
             "user_name": fake.random_element(elements=("-", fake.user_name())),
             "http_method": fake.http_method(),
