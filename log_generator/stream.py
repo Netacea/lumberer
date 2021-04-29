@@ -40,7 +40,10 @@ def stdout_sink(
     ),
 ):
     with ImplementedSinks.Stdout(rate=rate, schedule=schedule) as sink:
-        [sink.send(line) for line in inputfile]
+        [
+            sink.send(line)
+            for line in tqdm(inputfile, unit=" msgs", desc="Producing", unit_scale=True)
+        ]
 
 
 @app.command("kafka")
@@ -82,7 +85,10 @@ def kafka_sinks(
             rate=rate, schedule=schedule, broker=broker, topic=topic
         )
 
-    [sink.send(line) for line in inputfile]
+    [
+        sink.send(line)
+        for line in tqdm(inputfile, unit=" msgs", desc="Producing", unit_scale=True)
+    ]
     sink.close()
 
 
@@ -105,7 +111,10 @@ def s3_sink(
     with ImplementedSinks.S3(
         bucket=bucket, prefix=prefix, rate=rate, schedule=schedule
     ) as sink:
-        [sink.send(line) for line in inputfile]
+        [
+            sink.send(line)
+            for line in tqdm(inputfile, unit=" msgs", desc="Producing", unit_scale=True)
+        ]
 
 
 @app.command("files")
@@ -123,7 +132,10 @@ def files_sink(
     ),
 ):
     with ImplementedSinks.Files(rate=rate, schedule=schedule) as sink:
-        [sink.send(line) for line in inputfile]
+        [
+            sink.send(line)
+            for line in tqdm(inputfile, unit=" msgs", desc="Producing", unit_scale=True)
+        ]
 
 
 if __name__ == "__main__":
