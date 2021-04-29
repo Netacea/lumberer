@@ -3,6 +3,9 @@
 {
 	"name": "netacea-log-generator",
 	"dockerComposeFile": "docker-compose.yml",
+	"remoteEnv": {
+		"PATH": "${containerEnv:PATH}:${containerWorkspaceFolder}",
+	},
 	"shutdownAction": "stopCompose",
 	"workspaceFolder": "/workspace",
 	"service": "log-generator",
@@ -17,9 +20,8 @@
 	// 		"NODE_VERSION": "lts/*"
 	// 	}
 	// },
-
 	// Set *default* container specific settings.json values on container create.
-	"settings": { 
+	"settings": {
 		"terminal.integrated.shell.linux": "/bin/bash",
 		"python.pythonPath": "/usr/local/bin/python",
 		"python.linting.enabled": true,
@@ -34,7 +36,6 @@
 		"python.linting.pydocstylePath": "/usr/local/py-utils/bin/pydocstyle",
 		"python.linting.pylintPath": "/usr/local/py-utils/bin/pylint"
 	},
-
 	// Add the IDs of extensions you want installed when the container is created.
 	"extensions": [
 		"ms-python.python",
@@ -42,13 +43,10 @@
 		"njpwerner.autodocstring",
 		"jeppeandersen.vscode-kafka",
 	],
-
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	// "forwardPorts": [],
-
 	// Use 'postCreateCommand' to run commands after the container is created.
 	"postCreateCommand": "pip3 install --user -r requirements.txt",
-
 	// Comment out connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
 	"remoteUser": "vscode"
 }

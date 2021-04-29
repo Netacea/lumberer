@@ -5,12 +5,7 @@ import sys
 
 
 class LogRender:
-    def __init__(
-        self,
-        iterations: int = 1,
-        seed: int = 4321,
-        realtime: bool = True
-    ):
+    def __init__(self, iterations: int, realtime: bool, seed: int = 4321):
         self.iterations = iterations
         self.realtime = realtime
         self.init_timestamp = dt.datetime.now()

@@ -97,7 +97,6 @@ class Output:
 
             return subfunction(self)
 
-
     def send(self, logline: str):
         """Sent log line to sink.
 
