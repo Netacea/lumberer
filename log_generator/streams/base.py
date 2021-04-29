@@ -1,4 +1,3 @@
-import datetime as dt
 import functools as _functools
 import json
 import re
@@ -98,25 +97,6 @@ class Output:
 
             return subfunction(self)
 
-    def _add_timestamp(self, logline: str):
-        """Replace the logline's format placeholder with a real timestamp.
-
-        Args:
-            logline (str): the raw logline before real timestamp is added.
-
-        Returns:
-            str: The logline with the current timestamp in target format.
-        """
-        target_pattern = r"!!!(.+)!!!"
-        try:
-            target_format = re.search(target_pattern, logline).groups()[0]
-            new_timestamp = dt.datetime.now().strftime(target_format)
-            logline = re.sub(target_pattern, new_timestamp, logline)
-        except Exception as e:
-            print("WARNING: unable to insert real timestamp in line {}".format(logline))
-            print(e)
-        finally:
-            return logline
 
     def send(self, logline: str):
         """Sent log line to sink.
@@ -127,7 +107,6 @@ class Output:
         Returns:
             None
         """
-        # logline = self._add_timestamp(logline)
         if self.rate or self.ttl:
             func = rate_limited(self._rate_polling())(self._send)
             func(logline)

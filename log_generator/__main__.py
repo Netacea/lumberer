@@ -106,6 +106,9 @@ def generate(
     quiet: Optional[bool] = typer.Option(
         False, "-q", "--quiet", help="Hide the progress bar."
     ),
+    realtime: Optional[bool] = typer.Option(
+        False, "-r", "--realtime", help="Interpolate current timestamps in log lines."
+    ),
     version: Optional[bool] = typer.Option(
         None,
         "-v",
