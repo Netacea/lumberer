@@ -29,6 +29,7 @@ class LogRender:
             "ip_address": fake.ipv4_public(),
             "user_name": fake.random_element(elements=("-", fake.user_name())),
             "http_method": fake.http_method(),
+            "host": fake.domain_name(),
             "uri_path": fake.uri_path(),
             "uri_query_params": fake.random_element(
                 elements=(
@@ -45,9 +46,11 @@ class LogRender:
                 elements=(200, 201, 301, 302, 303, 400, 401, 404, 500, 502)
             ),
             "transfer_size": fake.random_element(elements=("-", fake.random_int())),
+            "request_time": fake.random_element(elements=("-", round(fake.random.random() / 10, 3))),
             "referer": fake.uri(),
             "user_agent": fake.user_agent(),
             "uuid": fake.uuid4(),
+            "loc": fake.bank_country().lower()
         }
 
     def render(self, file, quiet):
