@@ -9,10 +9,10 @@
 
 ### Non Functional Requirements
 - [x] "Benchmark mode"
-- [ ] Add some unexpected data
+- [x] Add some unexpected data
 - [x] Pacing of outputing data -> Scheduling in the future
 - [x] Handle a lot of data
-- [ ] Multithreaded processes
+- [x] Multithreaded processes
 - [ ] Test python consumer parsers (integration testing)
 
 ## Setup
