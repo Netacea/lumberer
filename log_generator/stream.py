@@ -8,7 +8,6 @@ from web import Web
 
 import typer
 
-import generators
 import streams as ImplementedSinks
 
 

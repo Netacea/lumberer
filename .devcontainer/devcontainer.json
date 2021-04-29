@@ -4,7 +4,7 @@
 	"name": "netacea-log-generator",
 	"dockerComposeFile": "docker-compose.yml",
 	"remoteEnv": {
-		"PATH": "${containerEnv:PATH}:/workspace",
+		"PATH": "${containerEnv:PATH}:${containerWorkspaceFolder}",
 	},
 	"shutdownAction": "stopCompose",
 	"workspaceFolder": "/workspace",
