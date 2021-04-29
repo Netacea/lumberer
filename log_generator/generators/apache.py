@@ -15,4 +15,4 @@ class Apache(LogRender):
         Returns:
             str: Apache Combined Log Line format.
         """
-        return f'{d["ip_address"]} - {d["user_name"]} [{d["timestamp"].strftime(self.timestamp_format)}] "{d["http_method"]} {d["uri_path"]+d["uri_query_params"]} {d["http_protocol"]}" {d["http_status"]} "{d["referer"]}" "{d["user_agent"]}"'  # noqa: E501
+        return f'{d["ip_address"]} - {d["user_name"]} [{d["timestamp"].strftime(self.timestamp_format)}] "{d["http_method"]} /{d["uri_path"]+d["uri_query_params"]} {d["http_protocol"]}" {d["http_status"]} "{d["referer"]}" "{d["user_agent"]}"'  # noqa: E501
