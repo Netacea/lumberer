@@ -18,6 +18,14 @@ class ConfluentKafka(Output):
     def __init__(
         self, broker: list, topic: str, rate: int = None, schedule: dict = None
     ):
+        """Kafka sink using the confluent_kafka library.
+
+        Args:
+            broker (list): List of brokers to connect to.
+            topic (str): Topic to produce the messages to.
+            rate (int, optional): Rate per second to send. Defaults to None.
+            schedule (dict, optional): Scheduled rate limits. Defaults to None.
+        """
         super().__init__(rate=rate, schedule=schedule)
         self.bootstrap_servers = broker
         self.topic = topic
@@ -56,8 +64,18 @@ class ConfluentKafka(Output):
 
 
 class ConfluentKafkaMP(Output):
-    def __init__(self, broker: list, topic: str, rate: int):
-        super().__init__(rate=rate)
+    def __init__(
+        self, broker: list, topic: str, rate: int = None, schedule: dict = None
+    ):
+        """Kafka sink using the confluent_kafka library and multiprocessing.
+
+        Args:
+            broker (list): List of brokers to connect to.
+            topic (str): Topic to produce the messages to.
+            rate (int, optional): Rate per second to send. Defaults to None.
+            schedule (dict, optional): Scheduled rate limits. Defaults to None.
+        """
+        super().__init__(rate=rate, schedule=schedule)
         self.bootstrap_servers = broker
         self.topic = topic
         self.partition_count = 4

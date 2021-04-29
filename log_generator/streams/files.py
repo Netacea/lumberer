@@ -40,7 +40,7 @@ class Files(Output):
 
     def _send(self, logline: str):
         self.buffer.append(logline)
-        if len(self.buffer) > self.buffer_size:
+        if len(self.buffer) >= self.buffer_size:
             now = datetime.utcnow().replace(tzinfo=timezone.utc).isoformat()
             self.write(f"{now}.log")
 

@@ -12,7 +12,7 @@ from cachetools import TTLCache, cached
 
 
 def rate_limited(max_per_second: int) -> Callable:
-    """Rate limiting decorator
+    """Rate limiting decorator.
 
     Args:
         max_per_second (int): Rate the decorated function can execute.
@@ -47,7 +47,17 @@ def rate_limited(max_per_second: int) -> Callable:
 
 
 class Output:
-    def __init__(self, rate: int = None, schedule=None):
+    def __init__(self, rate: int = None, schedule: dict = None):
+        """Base class for all output sinks.
+
+        Handles rate limiting and sending to child classes via the proxy of
+        using the send() method externally, and proxying it to _send() methods
+        on child classes.
+
+        Args:
+            rate (int, optional): Rate limiter per second. Defaults to None.
+            schedule (dict, optional): Dictionary of scheduled rate limits. Defaults to None.
+        """
         self.rate = rate
         self.ttl = None
         if schedule:
@@ -55,7 +65,12 @@ class Output:
             self.rate_set = cycle(self.raw_rate)
             self.ttlcache = TTLCache(1, ttl=self.ttl)
 
-    def _parse_schedule(self, schedule):
+    def _parse_schedule(self, schedule: dict):
+        """Parses schedule json into interval and rates.
+
+        Args:
+            schedule (dict): JSON deserialised for scheduling.
+        """
         try:
             x = json.load(schedule)
             self.raw_rate = x["schedule"]
@@ -66,8 +81,6 @@ class Output:
         except json.decoder.JSONDecodeError:
             print("ERROR: json is malformed")
             exit(2)
-        except Exception as e:
-            raise e
 
     def _rate_polling(self) -> int:
         """Rate limiting the send method.
@@ -86,13 +99,13 @@ class Output:
             return subfunction(self)
 
     def _add_timestamp(self, logline: str):
-        """Replace the logline's format placeholder with a real timestamp
+        """Replace the logline's format placeholder with a real timestamp.
 
         Args:
-            logline (str): the raw logline before real timestamp is added
+            logline (str): the raw logline before real timestamp is added.
 
         Returns:
-            str: The logline with the current timestamp in target format
+            str: The logline with the current timestamp in target format.
         """
         target_pattern = r"!!!(.+)!!!"
         try:
