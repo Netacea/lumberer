@@ -109,8 +109,8 @@ def generate(
     realtime: Optional[bool] = typer.Option(
         False, "-r", "--realtime", help="Interpolate current timestamps in log lines."
     ),
-    baddata: Optional[bool] = typer.Option(
-        False, "-b", "--baddata", help="Generate bad data examples to test parser"
+    baddata: Optional[float] = typer.Option(
+        None, "-b", "--baddata", help="Generate bad data examples to test parser"
     ),
     version: Optional[bool] = typer.Option(
         None,

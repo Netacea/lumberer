@@ -1,6 +1,7 @@
 import datetime as dt
 from faker import Faker
 from typer import progressbar
+from random import choices
 import sys
 
 
@@ -9,7 +10,7 @@ class LogRender:
         self,
         iterations: int,
         realtime: bool,
-        baddata: bool,
+        baddata: float,
         seed: int = 4321,
     ):
         self.iterations = iterations
@@ -116,13 +117,16 @@ class LogRender:
         }
 
     def render(self, file, quiet):
-        def print_line(seed=0):
-            x = None
+        def print_line(seed=0, data=None):
             if not self.baddata:
-                x = self._seed_data(seed)
+                data = self._seed_data(seed)
             else:
-                x = self._seed_bad_data(seed)
-            print(self.generate(x), file=file)
+                if bool(choices([0, 1], weights=[
+                        self.baddata, 100-self.baddata], k=1)[0]):
+                    data = self._seed_data(seed)
+                else:
+                    data = self._seed_bad_data(seed)
+            print(self.generate(data), file=file)
 
         if quiet:
             for _ in range(self.iterations):
