@@ -34,11 +34,14 @@ def generate(
     realtime: Optional[bool] = typer.Option(
         False, "-r", "--realtime", help="Interpolate current timestamps in log lines."
     ),
+    baddata: Optional[float] = typer.Option(
+        None, "-b", "--baddata", help="Generate percentage of bad data to mix in with good data (e.g. 50 = 50%)"
+    ),
 ):
     """Generates log lines to stdout."""
 
     log_generator = getattr(generators, log_type.value)
-    log_generator(iterations=iterations, realtime=realtime).render(
+    log_generator(iterations=iterations, realtime=realtime, baddata=baddata).render(
         file=sys.stdout, quiet=quiet
     )
 

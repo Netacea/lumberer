@@ -9,10 +9,10 @@
 
 ### Non Functional Requirements
 - [x] "Benchmark mode"
-- [ ] Add some unexpected data
+- [x] Add some unexpected data
 - [x] Pacing of outputing data -> Scheduling in the future
 - [x] Handle a lot of data
-- [ ] Multithreaded processes
+- [x] Multithreaded processes
 - [ ] Test python consumer parsers (integration testing)
 
 ## Setup
@@ -42,15 +42,15 @@ The tool is split into two commands, the `generate` command which only deals wit
 
 The most common usecase is to pipe `generate` to `stream` and create and send data to Kafka.
 
-```python log_generator generate --logtype apache --iterations 100000 | python log_generator stream --output kafka```
+```generate --logtype apache --iterations 100000 | stream kafka --broker broker:9092 --topic my-topic```
 
 However you can redirect the output of `generate` to a file:
 
-```python log_generator generate --logtype apache --iterations 10000 > apache.log```
+```generate --logtype apache --iterations 10000 > apache.log```
 
 Additionally you can feed a file into the streamer, and this is useful if you want to create a reproduceable log, or stream a log to the sink quicker than you can generate new log lines:
 
-```python log_generator stream --output kafka apache.log```
+```stream kafka --broker broker:9092 apache.log --topic my-topic```
 
 ## Benchmarking Kafka
 
@@ -59,7 +59,7 @@ The docker image has `pv` installed to monitor the bandwidth through a unix pipe
 Example Output:
 
 ```bash
-$ time bzcat example.apache.log.bz2 | pv | python log_generator stream --output kafka
+$ time bzcat example.apache.log.bz2 | pv | stream kafka --broker broker:9092 --topic my-topic
  215MiB 0:01:27 [2.48MiB/s] [                    <=>                                ]
 
 real    1m27.189s
@@ -74,3 +74,18 @@ In this example the test data (1,000,000 Apache log lines) took 1m27 to produce 
 Log generation rate limiting and scheduling of changes to the rate limiter is implemented in the streaming side of the project.
 
 See [the documentation](docs/rate_limit.md) for more.
+
+## Random insertion of corrupted logs
+You can run the ```generate``` command with the ```-b``` or ```--baddata``` flag to insert incorrect data among the data being generated. An example command is ```generate -l apache -b 100```. The number after the ```-b``` flag is a percentage of logs you want to be corrupted. 
+
+E.g. ```-baddata 50``` would give you roughly 50% corrupted data in your sample. Example of an incorrect log line for Apache is as follows:
+```
+256.500.301.9000 - - [29/Apr/2021:15:28:31 +0000] "BLAH /!?£$%^&*()-_category/tags/list-----=two&f=1 HTTP/5.0" 603 "!?£$%^&*()-_http://stein.com/" "!£$%^&*()-_+Mozilla/5.0 (iPod; U; CPU iPhone OS 3_3 like Mac OS X; ur-PK) AppleWebKit/531.32.3 (KHTML, like Gecko) Version/3.0.5 Mobile/8B115 Safari/6531.32.3"
+```
+## FOR SOME REAL SPEEEEEED
+
+To utilise all threads on the machine, use the following command.
+
+```cat /proc/cpuinfo | grep processor | xargs -n 1 -P 0 bash -c "generate --logtype apache --iterations 100000 --quiet" | stream kafka --broker broker:9092 --topic test123 ```
+
+See [xargs man page](https://man7.org/linux/man-pages/man1/xargs.1.html) for more details.
