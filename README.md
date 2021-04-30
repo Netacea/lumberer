@@ -222,3 +222,16 @@ aws s3 ls s3://netacea-log-generator-sink/demo --recursive | awk '{print $4}' | 
 ```
 
 ![benchmark](docs/s3_source.gif)
+
+### Kinesis
+
+AWS Kinesis can be used to send data.
+
+
+#### Sink
+
+You can send data in kinesis. The sink will take care of batching the data up to the maximum size (500) and send them in the stream provided. The stream should already exist in AWS.
+
+```bash
+generate --logtype apache --iterations 100000 | stream kinesis --stream "log-generator-stream"
+```
