@@ -52,6 +52,8 @@
 
 The tool is split into two commands, the `generate` command which only deals with generating log lines (and printing them to standard out) and the `stream` command, which can either take a pipe in standard in, or a filename to a text file to open and stream.
 
+**Firstly and foremost, both tools have detailed `--help` flags to display the arguments and options each command has.**
+
 A common use-case is to pipe `generate` to `stream` and create and send data to Kafka.
 
 ```bash
@@ -93,9 +95,10 @@ The stream utility has the capacity to either flat out rate limit the streaming 
 In this example we're reading from a local file, and rate limiting the downstream transmission rate to 1 message a second.
 
 ```bash
-$ stream kafka --broker broker:9092 --topic my-topic --rate 1 example.apache.log
-Streaming: 11.0 msgs [00:10, 1.00 msgs/s]
+stream kafka --broker broker:9092 --topic my-topic --rate 1 example.apache.log
 ```
+![rate-limit](docs/rate_limit.gif) 
+
 
 To confirm if this is working, you can refer to CMAK for an overview of the status for the topic -
 ![rate-limit](docs/rate_limit.png) 
@@ -161,18 +164,15 @@ In this example, lunchtime is vaguely busy, and the evening is busy, with early 
 
 ### Benchmarking Kafka
 
-:+1: The docker image has `pv` installed to monitor the bandwidth through a unix pipe, so running this command will give you both the runtime of the process but also the instantaneous current bandwidth in the pipe.
+:+1: _The docker image has `pv` installed to monitor the bandwidth through a unix pipe, so running this command will give you both the runtime of the process but also the instantaneous current bandwidth in the pipe._
 
 #### Simple Benchmark
 
 ```bash
 $ time bzcat example.apache.log.bz2 | stream kafka --broker broker:9092 --topic my-topic
-Streaming: 1.00M msgs [00:09, 103k msgs/s]
-
-real    0m11.017s
-user    0m12.972s
-sys     0m1.122s
 ```
+
+![benchmark](docs/benchmark.gif)
 
 In this example the compressed test data (1,000,000 Apache log lines) took 11 seconds to decompress and produce into Kafka, and a throughput of approximately 103,000 messages a second.
 
@@ -181,8 +181,10 @@ In this example the compressed test data (1,000,000 Apache log lines) took 11 se
 To utilise more than one thread on the machine, you can use a combination of `xargs` and either `seq` for a fixed number, or polling `/proc/cpuinfo` to automatically used the thread count available to the tool. 
 
 ```bash
-cat /proc/cpuinfo | grep processor | xargs -n 1 -P 0 bash -c "generate --logtype apache --iterations 100000 --quiet" | stream kafka --broker broker:9092 --topic test123
+cat /proc/cpuinfo | grep processor | awk '{print $3}'| xargs -n 1 -P 0 bash -c "generate --logtype apache --iterations 10000 --quiet" | stream kafka --broker broker:9092 --topic test123
 ```
+
+![benchmark](docs/xargs.gif)
 
 See [xargs man page](https://man7.org/linux/man-pages/man1/xargs.1.html) for more details.
 
