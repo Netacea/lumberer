@@ -189,3 +189,36 @@ cat /proc/cpuinfo | grep processor | awk '{print $3}'| xargs -n 1 -P 0 bash -c "
 See [xargs man page](https://man7.org/linux/man-pages/man1/xargs.1.html) for more details.
 
 _tl;dr `xargs` is set to use as many threads as it can via the use of the `-P 0` option and `-n 1` option runs each `xargs` sub thread with one of the lines piped in._
+
+## Sources and Sinks
+
+This tool has various sources and sinks.
+
+### S3
+
+AWS Simple Storage Service is a common storage both as a source and a sink.
+
+
+#### Sink
+
+You can write log files into S3 directly from the std stream, breaking the files at the `--linecount` size. In this example 100,000 log lines were split into 10 files, 10,000 log lines long.
+
+```bash
+generate --logtype apache --iterations 100000 | stream s3 --bucket "netacea-log-generator-sink" --prefix "demo/" --linecount 10000 -p 1
+```
+
+![benchmark](docs/s3_sink.gif)
+
+![benchmark](docs/s3_sink.png)
+
+#### Source
+
+In addition to being a sink, you generate log files to - you can also use it as a source to read from and send to a different sink.
+
+This is especially useful when combined with the rate limiting or scheduling shown here:
+
+```bash
+aws s3 ls s3://netacea-log-generator-sink/demo --recursive | awk '{print $4}' | xargs -n 1 -I {} aws s3 cp s3://netacea-log-generator-sink/{} - | stream kafka --broker broker:9092 --topic aws-dump --rate 10
+```
+
+![benchmark](docs/s3_source.gif)
