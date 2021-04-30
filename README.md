@@ -43,8 +43,9 @@
 - On Windows press ```Ctrl, shift + P``` to open up the command palette
 - Execute ```Remote-Containers: Open Workspace in Container``` to download all the requirements for the container and reopen Visual Studio Code.
 - On a browser open ```http://localhost:9000``` to access CMAK to administrate the local Kafka cluster.
-- Click on Cluster > Add Cluster & copy the setup in the image and save 
-  ![cmak](docs/cmak_setup.png) 
+- Click on Cluster > Add Cluster & copy the setup in the image and save.
+  
+![cmak](docs/cmak_setup.png) 
 
 
 ## Usage
@@ -158,11 +159,11 @@ In this example, lunchtime is vaguely busy, and the evening is busy, with early 
 }
 ```
 
-## Benchmarking Kafka
+### Benchmarking Kafka
 
 :+1: The docker image has `pv` installed to monitor the bandwidth through a unix pipe, so running this command will give you both the runtime of the process but also the instantaneous current bandwidth in the pipe.
 
-### Simple Benchmark
+#### Simple Benchmark
 
 ```bash
 $ time bzcat example.apache.log.bz2 | stream kafka --broker broker:9092 --topic my-topic
@@ -175,7 +176,7 @@ sys     0m1.122s
 
 In this example the compressed test data (1,000,000 Apache log lines) took 11 seconds to decompress and produce into Kafka, and a throughput of approximately 103,000 messages a second.
 
-## Concurrency
+### Concurrency
 
 To utilise more than one thread on the machine, you can use a combination of `xargs` and either `seq` for a fixed number, or polling `/proc/cpuinfo` to automatically used the thread count available to the tool. 
 
@@ -185,4 +186,4 @@ cat /proc/cpuinfo | grep processor | xargs -n 1 -P 0 bash -c "generate --logtype
 
 See [xargs man page](https://man7.org/linux/man-pages/man1/xargs.1.html) for more details.
 
-_tl;dr_ `xargs` is set to use as many threads as it can via the use of the `-P 0` option and `-n 1` option runs each `xargs` sub thread with one of the lines piped in.
+_tl;dr `xargs` is set to use as many threads as it can via the use of the `-P 0` option and `-n 1` option runs each `xargs` sub thread with one of the lines piped in._
