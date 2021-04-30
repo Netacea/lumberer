@@ -38,10 +38,11 @@ def stdout_sink(
     schedule: Optional[typer.FileText] = typer.Option(
         None, "-s", "--schedule", help="Path to json file to schedule rate limits."
     ),
+    position: Optional[int] = typer.Option(
+        0, "-p", "--position", help="Position for progress bar, use 1 if you're piping from generate."
+    )
 ):
     # Set the progress bar position based on if the input is stdin
-    position = 1 if inputfile is sys.stdin else 0
-
     with ImplementedSinks.Stdout(rate=rate, schedule=schedule) as sink:
         [
             sink.send(line)
@@ -80,10 +81,11 @@ def kafka_sinks(
     schedule: Optional[typer.FileText] = typer.Option(
         None, "-s", "--schedule", help="Path to json file to schedule rate limits."
     ),
+    position: Optional[int] = typer.Option(
+        0, "-p", "--position", help="Position for progress bar, use 1 if you're piping from generate."
+    )
 ):
     # Set the progress bar position based on if the input is stdin
-    position = 1 if inputfile is sys.stdin else 0
-
     if producer == AvailableKafkaProducers.kafka_confluent:
         sink = ImplementedSinks.ConfluentKafka(
             rate=rate, schedule=schedule, broker=broker, topic=topic
@@ -125,13 +127,14 @@ def s3_sink(
     schedule: Optional[typer.FileText] = typer.Option(
         None, "-s", "--schedule", help="Path to json file to schedule rate limits."
     ),
+    position: Optional[int] = typer.Option(
+        0, "-p", "--position", help="Position for progress bar, use 1 if you're piping from generate."
+    ),
     key_line_count: Optional[int] = typer.Option(
         1000, "-c", "--linecount", help="Max line count size per S3 key."
     ),
 ):
     # Set the progress bar position based on if the input is stdin
-    position = 1 if inputfile is sys.stdin else 0
-
     with ImplementedSinks.S3(
         bucket=bucket,
         prefix=prefix,
@@ -164,10 +167,11 @@ def files_sink(
     schedule: Optional[typer.FileText] = typer.Option(
         None, "-s", "--schedule", help="Path to json file to schedule rate limits."
     ),
+    position: Optional[int] = typer.Option(
+        0, "-p", "--position", help="Position for progress bar, use 1 if you're piping from generate."
+    )
 ):
     # Set the progress bar position based on if the input is stdin
-    position = 1 if inputfile is sys.stdin else 0
-
     with ImplementedSinks.Files(rate=rate, schedule=schedule) as sink:
         [
             sink.send(line)

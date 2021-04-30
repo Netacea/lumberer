@@ -2,6 +2,16 @@
 
 ![splash](docs/splash.gif) 
 
+## tl;dr
+
+- Ever wanted to generate pseudo realistic data for testing a process?
+- Ever wanted to take that data and stream it to the sink of your choice?
+- Ever wanted to be able to rate limit that process?
+
+**_Your dreams have been answered._**
+
+
+
 ## Requirements 
 
 ### Functional Requirements
@@ -10,12 +20,11 @@
 - [x] Output to multiple sinks
 
 ### Non Functional Requirements
-- [x] "Benchmark mode"
+- [x] Benchmark mode
 - [x] Add some unexpected data
 - [x] Pacing of outputing data -> Scheduling in the future
 - [x] Handle a lot of data
 - [x] Multithreaded processes
-- [ ] Test python consumer parsers (integration testing)
 
 ## Setup
 
@@ -38,56 +47,142 @@
   ![cmak](docs/cmak_setup.png) 
 
 
-## Example Usage
+## Usage
 
-The tool is split into two commands, the `generate` command which only deals with generating fake log lines (and printing them to standard out) and the `stream` command, which can either take a pipe in standard in, or a filename to a text file to open and stream.
+The tool is split into two commands, the `generate` command which only deals with generating log lines (and printing them to standard out) and the `stream` command, which can either take a pipe in standard in, or a filename to a text file to open and stream.
 
-The most common usecase is to pipe `generate` to `stream` and create and send data to Kafka.
+A common use-case is to pipe `generate` to `stream` and create and send data to Kafka.
 
-```generate --logtype apache --iterations 100000 | stream kafka --broker broker:9092 --topic my-topic```
+```bash
+generate --logtype apache --iterations 100000 | stream kafka --broker broker:9092 --topic my-topic -p 1
+```
 
 However you can redirect the output of `generate` to a file:
 
-```generate --logtype apache --iterations 10000 > apache.log```
+```bash
+generate --logtype apache --iterations 10000 > apache.log
+```
 
 Additionally you can feed a file into the streamer, and this is useful if you want to create a reproduceable log, or stream a log to the sink quicker than you can generate new log lines:
 
-```stream kafka --broker broker:9092 apache.log --topic my-topic```
+```bash
+stream kafka --broker broker:9092 --topic my-topic apache.log 
+```
+
+### Random Insertion of Corrupted Logs
+
+You can run the `generate` command with the `-b` or `--baddata` flag to insert incorrect data among the data being generated. An example command is `generate -l apache -b 100`. The number after the `-b` flag is a percentage of logs you want to be corrupted. 
+
+E.g. ```-baddata 50``` would give you roughly 50% corrupted data in your sample. Example of an incorrect log line for Apache is as follows:
+
+```bash
+256.500.301.9000 - - [29/Apr/2021:15:28:31 +0000] "BLAH /!?£$%^&*()-_category/tags/list-----=two&f=1 HTTP/5.0" 603 "!?£$%^&*()-_http://stein.com/" "!£$%^&*()-_+Mozilla/5.0 (iPod; U; CPU iPhone OS 3_3 like Mac OS X; ur-PK) AppleWebKit/531.32.3 (KHTML, like Gecko) Version/3.0.5 Mobile/8B115 Safari/6531.32.3"
+```
+
+If you need to intersperce broken data into your logs, to test error handling downstream you can use the `generate` command with the `--baddata` or `-b` option. This option is an integer which represents the approximate average of bad data to inject in the stream.
+
+For example; `-b 40` value would on average, send 40% bad data to the sink.
+
+### Rate Limiting and Scheduling
+
+The stream utility has the capacity to either flat out rate limit the streaming data, or adjust the streaming data rate limit using a json file.
+
+#### Rate Limiting
+
+In this example we're reading from a local file, and rate limiting the downstream transmission rate to 1 message a second.
+
+```bash
+$ stream kafka --broker broker:9092 --topic my-topic --rate 1 example.apache.log
+Streaming: 11.0 msgs [00:10, 1.00 msgs/s]
+```
+
+To confirm if this is working, you can refer to CMAK for an overview of the status for the topic -
+![rate-limit](docs/rate_limit.png) 
+
+There will be some overhead with buffering in the transmission phase, so the generated pace may not accurately line up with the reported pace of messages but it's pretty close.
+
+#### Scheduling
+
+To schedule rate limiting in the streamer, you can call the command in the example shown below, and the json format shown here.
+
+The update interval represents how long it stays at that pace in seconds, in this example 10 seconds. Every 3 seconds it'll jump to the next number in the array, so for the first 3 seconds, it'll stream 10 records a second, then the next 3 seconds stream at a rate of 20 records a second, and finally 5 records a second for the third block of 3 seconds.
+
+At completion of iterating through the array, it'll cycle back the beginning and read the first value and continue iterating.
+
+```json
+{
+    "update_interval": 3,
+    "schedule": [
+        10,
+        20,
+        5
+    ]
+}
+```
+
+![scheduling](docs/schedule.gif)
+
+Another example could look something like this, where you change the interval every hour (3600 seconds), and the timings vaguely represent the load variations in the hours throughout the day.
+
+In this example, lunchtime is vaguely busy, and the evening is busy, with early morning being very sparse.
+
+```json
+{
+    "update_interval": 3600,
+    "schedule": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        2,
+        2,
+        3,
+        3,
+        3,
+        4,
+        4,
+        5,
+        3,
+        2,
+        2,
+        4,
+        5,
+        6,
+        10,
+        7,
+        5,
+        2,
+        1,
+    ]
+}
+```
 
 ## Benchmarking Kafka
 
-The docker image has `pv` installed to monitor the bandwidth through a unix pipe, so running this command will give you both the runtime of the process but also the instantaneous current bandwidth in the pipe.
+:+1: The docker image has `pv` installed to monitor the bandwidth through a unix pipe, so running this command will give you both the runtime of the process but also the instantaneous current bandwidth in the pipe.
 
-Example Output:
+### Simple Benchmark
 
 ```bash
-$ time bzcat example.apache.log.bz2 | pv | stream kafka --broker broker:9092 --topic my-topic
- 215MiB 0:01:27 [2.48MiB/s] [                    <=>                                ]
+$ time bzcat example.apache.log.bz2 | stream kafka --broker broker:9092 --topic my-topic
+Streaming: 1.00M msgs [00:09, 103k msgs/s]
 
-real    1m27.189s
-user    1m52.882s
-sys     0m17.771s
+real    0m11.017s
+user    0m12.972s
+sys     0m1.122s
 ```
 
-In this example the test data (1,000,000 Apache log lines) took 1m27 to produce into Kafka, and a throughput from the text source of 2.5MiB/s.
+In this example the compressed test data (1,000,000 Apache log lines) took 11 seconds to decompress and produce into Kafka, and a throughput of approximately 103,000 messages a second.
 
-## Rate Limiting and Scheduling
+## Concurrency
 
-Log generation rate limiting and scheduling of changes to the rate limiter is implemented in the streaming side of the project.
+To utilise more than one thread on the machine, you can use a combination of `xargs` and either `seq` for a fixed number, or polling `/proc/cpuinfo` to automatically used the thread count available to the tool. 
 
-See [the documentation](docs/rate_limit.md) for more.
-
-## Random insertion of corrupted logs
-You can run the ```generate``` command with the ```-b``` or ```--baddata``` flag to insert incorrect data among the data being generated. An example command is ```generate -l apache -b 100```. The number after the ```-b``` flag is a percentage of logs you want to be corrupted. 
-
-E.g. ```-baddata 50``` would give you roughly 50% corrupted data in your sample. Example of an incorrect log line for Apache is as follows:
+```bash
+cat /proc/cpuinfo | grep processor | xargs -n 1 -P 0 bash -c "generate --logtype apache --iterations 100000 --quiet" | stream kafka --broker broker:9092 --topic test123
 ```
-256.500.301.9000 - - [29/Apr/2021:15:28:31 +0000] "BLAH /!?£$%^&*()-_category/tags/list-----=two&f=1 HTTP/5.0" 603 "!?£$%^&*()-_http://stein.com/" "!£$%^&*()-_+Mozilla/5.0 (iPod; U; CPU iPhone OS 3_3 like Mac OS X; ur-PK) AppleWebKit/531.32.3 (KHTML, like Gecko) Version/3.0.5 Mobile/8B115 Safari/6531.32.3"
-```
-## FOR SOME REAL SPEEEEEED
-
-To utilise all threads on the machine, use the following command.
-
-```cat /proc/cpuinfo | grep processor | xargs -n 1 -P 0 bash -c "generate --logtype apache --iterations 100000 --quiet" | stream kafka --broker broker:9092 --topic test123 ```
 
 See [xargs man page](https://man7.org/linux/man-pages/man1/xargs.1.html) for more details.
+
+_tl;dr_ `xargs` is set to use as many threads as it can via the use of the `-P 0` option and `-n 1` option runs each `xargs` sub thread with one of the lines piped in.

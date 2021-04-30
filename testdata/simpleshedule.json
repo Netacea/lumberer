@@ -1,8 +1,8 @@
 {
-    "update_interval": 10,
+    "update_interval": 3,
     "schedule": [
         10,
         20,
-        1
+        5
     ]
 }
