@@ -39,8 +39,11 @@ def stdout_sink(
         None, "-s", "--schedule", help="Path to json file to schedule rate limits."
     ),
     position: Optional[int] = typer.Option(
-        0, "-p", "--position", help="Position for progress bar, use 1 if you're piping from generate."
-    )
+        0,
+        "-p",
+        "--position",
+        help="Position for progress bar, use 1 if you're piping from generate.",
+    ),
 ):
     # Set the progress bar position based on if the input is stdin
     with ImplementedSinks.Stdout(rate=rate, schedule=schedule) as sink:
@@ -82,8 +85,11 @@ def kafka_sinks(
         None, "-s", "--schedule", help="Path to json file to schedule rate limits."
     ),
     position: Optional[int] = typer.Option(
-        0, "-p", "--position", help="Position for progress bar, use 1 if you're piping from generate."
-    )
+        0,
+        "-p",
+        "--position",
+        help="Position for progress bar, use 1 if you're piping from generate.",
+    ),
 ):
     # Set the progress bar position based on if the input is stdin
     if producer == AvailableKafkaProducers.kafka_confluent:
@@ -128,7 +134,10 @@ def s3_sink(
         None, "-s", "--schedule", help="Path to json file to schedule rate limits."
     ),
     position: Optional[int] = typer.Option(
-        0, "-p", "--position", help="Position for progress bar, use 1 if you're piping from generate."
+        0,
+        "-p",
+        "--position",
+        help="Position for progress bar, use 1 if you're piping from generate.",
     ),
     key_line_count: Optional[int] = typer.Option(
         1000, "-c", "--linecount", help="Max line count size per S3 key."
@@ -141,6 +150,45 @@ def s3_sink(
         rate=rate,
         schedule=schedule,
         key_line_count=key_line_count,
+    ) as sink:
+        [
+            sink.send(line)
+            for line in tqdm(
+                inputfile,
+                unit=" msgs",
+                desc="Streaming",
+                unit_scale=True,
+                position=position,
+            )
+        ]
+
+
+@app.command("kinesis")
+def kinesis_sink(
+    inputfile: Optional[typer.FileText] = typer.Argument(
+        sys.stdin,
+        show_default=False,
+        help="Path to textfile to stream, defaults to stdin pipe if none given.",
+    ),
+    stream: str = typer.Option(..., help="Kinesis stream name to send to."),
+    rate: Optional[int] = typer.Option(
+        None, "-r", "--rate", help="Rate-limit line generation per second."
+    ),
+    schedule: Optional[typer.FileText] = typer.Option(
+        None, "-s", "--schedule", help="Path to json file to schedule rate limits."
+    ),
+    position: Optional[int] = typer.Option(
+        0,
+        "-p",
+        "--position",
+        help="Position for progress bar, use 1 if you're piping from generate.",
+    )
+):
+    # Set the progress bar position based on if the input is stdin
+    with ImplementedSinks.Kinesis(
+        stream=stream,
+        rate=rate,
+        schedule=schedule,
     ) as sink:
         [
             sink.send(line)
@@ -168,8 +216,11 @@ def files_sink(
         None, "-s", "--schedule", help="Path to json file to schedule rate limits."
     ),
     position: Optional[int] = typer.Option(
-        0, "-p", "--position", help="Position for progress bar, use 1 if you're piping from generate."
-    )
+        0,
+        "-p",
+        "--position",
+        help="Position for progress bar, use 1 if you're piping from generate.",
+    ),
 ):
     # Set the progress bar position based on if the input is stdin
     with ImplementedSinks.Files(rate=rate, schedule=schedule) as sink:
