@@ -5,16 +5,16 @@ from streams.base import Output
 
 
 class Kinesis(Output):
-    def __init__(self, topic: str, rate: int = None, schedule: dict = None):
+    def __init__(self, stream: str, rate: int = None, schedule: dict = None):
         """Kinesis sink using the boto3 library.
 
         Args:
-            topic (str): Topic to produce the messages to.
+            stream (str): Stream to produce the messages to.
             rate (int, optional): Rate per second to send. Defaults to None.
             schedule (dict, optional): Scheduled rate limits. Defaults to None.
         """
         super().__init__(rate=rate, schedule=schedule)
-        self.topic = topic
+        self.stream = stream
         self.buffer_size = 500
         self.client = boto3.client("kinesis")
 
@@ -46,12 +46,12 @@ class Kinesis(Output):
         """
         try:
             response = self.client.put_records(
-                Records=self.buffer, StreamName=self.topic
+                Records=self.buffer, StreamName=self.stream
             )
             if "FailedRecordCount" in response and response["FailedRecordCount"] > 0:
                 assert (
                     False
-                ), f"""There were {response["FailedRecordCount"]} records failed to go to {self.topic}"""
+                ), f"""There were {response["FailedRecordCount"]} records failed to go to {self.stream}"""
         except Exception as e:
             print(e)
             raise e

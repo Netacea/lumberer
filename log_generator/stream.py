@@ -170,7 +170,7 @@ def kinesis_sink(
         show_default=False,
         help="Path to textfile to stream, defaults to stdin pipe if none given.",
     ),
-    topic: str = typer.Option(..., help="Kafka topic to send to."),
+    stream: str = typer.Option(..., help="Kinesis stream name to send to."),
     rate: Optional[int] = typer.Option(
         None, "-r", "--rate", help="Rate-limit line generation per second."
     ),
@@ -186,7 +186,7 @@ def kinesis_sink(
 ):
     # Set the progress bar position based on if the input is stdin
     with ImplementedSinks.Kinesis(
-        topic=topic,
+        stream=stream,
         rate=rate,
         schedule=schedule,
     ) as sink:
