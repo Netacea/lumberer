@@ -164,6 +164,10 @@ class LogRender:
             print(self.generate(data), file=file)
 
         for _ in trange(
-            self.iterations, disable=quiet, unit="lines", desc="Generating"
+            self.iterations,
+            disable=quiet,
+            unit="lines",
+            desc="Generating",
+            unit_scale=True,
         ):
             write()

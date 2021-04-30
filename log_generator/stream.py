@@ -13,7 +13,7 @@ from web import Web
 
 # Remove standard handler and write loguru lines via tqdm.write
 logger.remove()
-logger.add(lambda msg: tqdm.write(msg, end=""))
+logger.add(lambda msg: tqdm.write(msg, end="", file=sys.stderr))
 
 
 class AvailableKafkaProducers(str, Enum):
@@ -39,10 +39,19 @@ def stdout_sink(
         None, "-s", "--schedule", help="Path to json file to schedule rate limits."
     ),
 ):
+    # Set the progress bar position based on if the input is stdin
+    position = 1 if inputfile is sys.stdin else 0
+
     with ImplementedSinks.Stdout(rate=rate, schedule=schedule) as sink:
         [
             sink.send(line)
-            for line in tqdm(inputfile, unit=" msgs", desc="Producing", unit_scale=True)
+            for line in tqdm(
+                inputfile,
+                unit=" msgs",
+                desc="Streaming",
+                unit_scale=True,
+                position=position,
+            )
         ]
 
 
@@ -72,6 +81,9 @@ def kafka_sinks(
         None, "-s", "--schedule", help="Path to json file to schedule rate limits."
     ),
 ):
+    # Set the progress bar position based on if the input is stdin
+    position = 1 if inputfile is sys.stdin else 0
+
     if producer == AvailableKafkaProducers.kafka_confluent:
         sink = ImplementedSinks.ConfluentKafka(
             rate=rate, schedule=schedule, broker=broker, topic=topic
@@ -87,7 +99,13 @@ def kafka_sinks(
 
     [
         sink.send(line)
-        for line in tqdm(inputfile, unit=" msgs", desc="Producing", unit_scale=True)
+        for line in tqdm(
+            inputfile,
+            unit=" msgs",
+            desc="Streaming",
+            unit_scale=True,
+            position=position,
+        )
     ]
     sink.close()
 
@@ -108,12 +126,21 @@ def s3_sink(
         None, "-s", "--schedule", help="Path to json file to schedule rate limits."
     ),
 ):
+    # Set the progress bar position based on if the input is stdin
+    position = 1 if inputfile is sys.stdin else 0
+
     with ImplementedSinks.S3(
         bucket=bucket, prefix=prefix, rate=rate, schedule=schedule
     ) as sink:
         [
             sink.send(line)
-            for line in tqdm(inputfile, unit=" msgs", desc="Producing", unit_scale=True)
+            for line in tqdm(
+                inputfile,
+                unit=" msgs",
+                desc="Streaming",
+                unit_scale=True,
+                position=position,
+            )
         ]
 
 
@@ -131,10 +158,19 @@ def files_sink(
         None, "-s", "--schedule", help="Path to json file to schedule rate limits."
     ),
 ):
+    # Set the progress bar position based on if the input is stdin
+    position = 1 if inputfile is sys.stdin else 0
+
     with ImplementedSinks.Files(rate=rate, schedule=schedule) as sink:
         [
             sink.send(line)
-            for line in tqdm(inputfile, unit=" msgs", desc="Producing", unit_scale=True)
+            for line in tqdm(
+                inputfile,
+                unit=" msgs",
+                desc="Streaming",
+                unit_scale=True,
+                position=position,
+            )
         ]
 
 
