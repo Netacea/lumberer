@@ -15,9 +15,10 @@ class Kinesis(Output):
         """
         super().__init__(rate=rate, schedule=schedule)
         self.topic = topic
+        self.buffer_size = 500
         self.client = boto3.client("kinesis")
 
-    def __enter__(self, buffer_size=500):
+    def __enter__(self):
         self.buffer = []
         return self
 

@@ -182,17 +182,13 @@ def kinesis_sink(
         "-p",
         "--position",
         help="Position for progress bar, use 1 if you're piping from generate.",
-    ),
-    key_line_count: Optional[int] = typer.Option(
-        1000, "-c", "--linecount", help="Max line count size per S3 key."
-    ),
+    )
 ):
     # Set the progress bar position based on if the input is stdin
     with ImplementedSinks.Kinesis(
         topic=topic,
         rate=rate,
         schedule=schedule,
-        key_line_count=key_line_count,
     ) as sink:
         [
             sink.send(line)
