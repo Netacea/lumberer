@@ -125,12 +125,19 @@ def s3_sink(
     schedule: Optional[typer.FileText] = typer.Option(
         None, "-s", "--schedule", help="Path to json file to schedule rate limits."
     ),
+    key_line_count: Optional[int] = typer.Option(
+        1000, "-c", "--linecount", help="Max line count size per S3 key."
+    ),
 ):
     # Set the progress bar position based on if the input is stdin
     position = 1 if inputfile is sys.stdin else 0
 
     with ImplementedSinks.S3(
-        bucket=bucket, prefix=prefix, rate=rate, schedule=schedule
+        bucket=bucket,
+        prefix=prefix,
+        rate=rate,
+        schedule=schedule,
+        key_line_count=key_line_count,
     ) as sink:
         [
             sink.send(line)

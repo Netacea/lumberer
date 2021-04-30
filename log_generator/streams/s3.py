@@ -9,9 +9,9 @@ class S3(Output):
         self,
         bucket: str,
         prefix: str,
+        key_line_count: int,
         rate: int = None,
         schedule: dict = None,
-        buffer_size: int = 1000,
         compressed: bool = False,
     ):
         """AWS Simple Storage Service sink using boto3.
@@ -21,12 +21,12 @@ class S3(Output):
             prefix (str): Prefix to add to all the keys.
             rate (int, optional): Ratelimit per second to collect log lines. Defaults to None.
             schedule (dict, optional): Scheduled ratelimits. Defaults to None.
-            buffer_size (int, optional): Size of files prior to upload in lines. Defaults to 1000.
+            key_line_count (int, optional): Size of files prior to upload in lines. Defaults to 1000.
             compressed (bool, optional): Compress the resulting keys. Defaults to False.
         """
         super().__init__(rate=rate, schedule=schedule)
         self.compressed = compressed
-        self.buffer_size = buffer_size
+        self.buffer_size = key_line_count
         self.bucket = bucket
         self.prefix = prefix
         self.s3 = boto3.resource("s3")
@@ -36,8 +36,9 @@ class S3(Output):
         return self
 
     def __exit__(self, type, value, traceback):
-        now = datetime.utcnow().replace(tzinfo=timezone.utc).isoformat()
-        self.write(f"{now}.log")
+        if len(self.buffer) > 0:
+            now = datetime.utcnow().replace(tzinfo=timezone.utc).isoformat()
+            self.write(f"{now}.log")
 
     def _compress(self, method: str = "gzip"):
         raise NotImplementedError
@@ -63,3 +64,4 @@ class S3(Output):
         # TODO - Add error handling in this method.
         s3_object = self.s3.Object(self.bucket, f"{self.prefix}{key}")
         s3_object.put(Body="".join(self.buffer))
+        self.buffer = []
