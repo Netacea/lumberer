@@ -9,6 +9,8 @@ from web import Web
 import typer
 import generators
 
+from __init__ import version_callback
+
 
 class AvailableLogTypes(str, Enum):
     apache = "Apache"
@@ -38,6 +40,9 @@ def generate(
         "-b",
         "--baddata",
         help="Generate percentage of bad data to mix in with good data (e.g. 50 = 50%)",
+    ),
+    version: Optional[bool] = typer.Option(
+        None, "--version", callback=version_callback, is_eager=True
     ),
 ):
     """Generates log lines to stdout."""
