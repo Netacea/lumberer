@@ -2,6 +2,8 @@ import functools as _functools
 import json
 import threading as _threading
 import time
+from gzip import GzipFile
+from io import BytesIO
 from itertools import cycle
 from sys import exit
 from typing import Callable
@@ -56,8 +58,9 @@ class Output:
             rate (int, optional): Rate limiter per second. Defaults to None.
             schedule (dict, optional): Dictionary of scheduled rate limits. Defaults to None.
         """
+        self._reset()
         self.rate = rate
-        self.ttl = None
+
         if schedule:
             self._parse_schedule(schedule)
             self.rate_set = cycle(self.raw_rate)
@@ -113,3 +116,14 @@ class Output:
 
     def _send(self, logline: str):
         raise NotImplementedError
+
+    def _compress(self, buffer: list, method: str = "gzip"):
+        if self.compressed:
+            gz = GzipFile(None, "wb", 7, self.body)
+            gz.write("".join(self.buffer).encode("utf-8"))
+            gz.close()
+
+    def _reset(self):
+        self.ttl = None
+        self.buffer = []
+        self.body = BytesIO()

@@ -182,7 +182,7 @@ def kinesis_sink(
         "-p",
         "--position",
         help="Position for progress bar, use 1 if you're piping from generate.",
-    )
+    ),
 ):
     # Set the progress bar position based on if the input is stdin
     with ImplementedSinks.Kinesis(
@@ -209,6 +209,9 @@ def files_sink(
         show_default=False,
         help="Path to textfile to stream, defaults to stdin pipe if none given.",
     ),
+    compressed: Optional[bool] = typer.Option(
+        False, "-c", "--compressed", help="Write gzip compressed logs."
+    ),
     rate: Optional[int] = typer.Option(
         None, "-r", "--rate", help="Rate-limit line generation per second."
     ),
@@ -223,7 +226,9 @@ def files_sink(
     ),
 ):
     # Set the progress bar position based on if the input is stdin
-    with ImplementedSinks.Files(rate=rate, schedule=schedule) as sink:
+    with ImplementedSinks.Files(
+        rate=rate, schedule=schedule, compressed=compressed
+    ) as sink:
         [
             sink.send(line)
             for line in tqdm(

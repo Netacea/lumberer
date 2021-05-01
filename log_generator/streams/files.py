@@ -1,16 +1,17 @@
 from datetime import datetime, timezone
 from pathlib import Path
+
 from streams.base import Output
 
 
 class Files(Output):
     def __init__(
         self,
+        compressed: bool,
+        rate: int,
+        schedule: dict,
         path: str = ".",
         buffer_size: int = 1000,
-        compressed: bool = False,
-        rate: int = None,
-        schedule: dict = None,
     ):
         """Local Filesystem Sink.
 
@@ -24,9 +25,9 @@ class Files(Output):
         """
         super().__init__(rate=rate, schedule=schedule)
         self.compressed = compressed
+        self.suffix = ".log.gz" if compressed else ".log"
         self.buffer_size = buffer_size
         self.path = path
-        self.buffer = []
 
     def __enter__(self):
         return self
@@ -35,11 +36,9 @@ class Files(Output):
         self.close()
 
     def close(self):
-        now = datetime.utcnow().replace(tzinfo=timezone.utc).isoformat()
-        self.write(f"{now}.log")
-
-    def _compress(self, method: str = "gzip"):
-        raise NotImplementedError
+        if len(self.buffer) > 0:
+            now = datetime.utcnow().replace(tzinfo=timezone.utc).isoformat()
+            self.write(f"{now}.log")
 
     def _send(self, logline: str):
         self.buffer.append(logline)
@@ -48,6 +47,7 @@ class Files(Output):
             self.write(f"{now}.log")
 
     def write(self, key: str):
-        with open(Path(self.path) / Path(key), "w") as file:
-            file.write("".join(self.buffer))
-        self.buffer = []
+        self._compress(self.buffer)
+        with open(Path(self.path) / Path(key).with_suffix(self.suffix), "wb") as file:
+            file.write(self.body.getvalue())
+        self._reset()

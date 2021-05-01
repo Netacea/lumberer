@@ -1,6 +1,8 @@
+from datetime import datetime, timezone
+
 import boto3
 from botocore.exceptions import ClientError
-from datetime import datetime, timezone
+
 from streams.base import Output
 
 
@@ -29,19 +31,16 @@ class S3(Output):
         self.buffer_size = key_line_count
         self.bucket = bucket
         self.prefix = prefix
-        self.s3 = boto3.resource("s3")
+        self.s3 = boto3.client("s3")
+        self.suffix = ".log"
 
     def __enter__(self, buffer_size=1000):
-        self.buffer = []
         return self
 
     def __exit__(self, type, value, traceback):
         if len(self.buffer) > 0:
             now = datetime.utcnow().replace(tzinfo=timezone.utc).isoformat()
             self.write(f"{now}.log")
-
-    def _compress(self, method: str = "gzip"):
-        raise NotImplementedError
 
     def _send(self, logline: str):
         """Send proxy to write to a buffer until the size is reached.
@@ -53,7 +52,7 @@ class S3(Output):
         if len(self.buffer) >= self.buffer_size:
             # TODO - Naming template instead of just using ISO timestamps.
             now = datetime.utcnow().replace(tzinfo=timezone.utc).isoformat()
-            self.write(f"{now}.log")
+            self.write(now)
 
     def write(self, key: str):
         """Write the buffer to S3.
@@ -62,6 +61,14 @@ class S3(Output):
             key (str): File key to write to.
         """
         # TODO - Add error handling in this method.
-        s3_object = self.s3.Object(self.bucket, f"{self.prefix}{key}")
-        s3_object.put(Body="".join(self.buffer))
-        self.buffer = []
+        self._compress(self.buffer)
+        # s3_object = self.s3.Object(self.bucket, f"{self.prefix}{key}{self.suffix}")
+        # s3_object.put(Body="".join(self.buffer))
+        self.s3.put_object(
+            Bucket=self.bucket,
+            Key=f"{self.prefix}{key}{self.suffix}",
+            ContentType="text/plain",
+            ContentEncoding="gzip" if self.compress else "utf-8",
+            Body=self.body.getvalue(),
+        )
+        self._reset()
