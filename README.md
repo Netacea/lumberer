@@ -1,5 +1,7 @@
 # Netacea Log Generator
 
+:trophy: _Lab Week Winner 2021/04_ :trophy:
+
 ![splash](docs/splash.gif) 
 
 ## tl;dr
