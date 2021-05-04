@@ -172,8 +172,8 @@ def files_sink(
         show_default=False,
         help="Path to textfile to stream, defaults to stdin pipe if none given.",
     ),
-    compressed: Optional[FilesCompressors] = typer.Option(
-        None, "-c", "--compressor", help="Write compressed logs."
+    compressor: Optional[FilesCompressors] = typer.Option(
+        None, "-z", "--compressor", help="Write compressed logs."
     ),
     rate: Optional[int] = typer.Option(
         None, "-r", "--rate", help="Rate-limit line generation per second."
@@ -196,7 +196,7 @@ def files_sink(
     with ImplementedSinks.Files(
         rate=rate,
         schedule=schedule,
-        compressed=compressed,
+        compressed=compressor,
         path=path,
         linecount=line_count,
     ) as sink:
