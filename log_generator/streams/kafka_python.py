@@ -5,21 +5,38 @@ from streams.base import Output
 
 class Kafka(Output):
     def __init__(
-        self, broker: list, topic: str, rate: int = None, schedule: dict = None
+        self,
+        broker: list,
+        topic: str,
+        rate: int,
+        schedule: dict,
+        sasl_username: str,
+        sasl_password: str,
+        **kwargs,
     ):
         """Kafka sink using the kafka=python library.
 
         Args:
             broker (list): List of brokers to connect to.
             topic (str): Topic to produce the messages to.
-            rate (int, optional): Rate per second to send. Defaults to None.
-            schedule (dict, optional): Scheduled rate limits. Defaults to None.
+            rate (int, optional): Rate per second to send.
+            schedule (dict, optional): Scheduled rate limits.
+            sasl_username (str): Optional SASL username.
+            sasl_password (str): Optional SASL password.
         """
         super().__init__(rate=rate, schedule=schedule)
+        extra_config = {k.replace(".", "_"): v for k, v in kwargs.items()}
+        if all([sasl_password, sasl_username]):
+            extra_config.update(
+                {
+                    "sasl_plain_username": sasl_username,
+                    "sasl_plain_password": sasl_password,
+                }
+            )
         self.bootstrap_servers = broker
         self.topic = topic
         self.producer = KafkaProducer(
-            bootstrap_servers=self.bootstrap_servers, linger_ms=100
+            bootstrap_servers=self.bootstrap_servers, linger_ms=50, **extra_config
         )
 
     def __enter__(self):

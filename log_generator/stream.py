@@ -50,8 +50,11 @@ def stdout_sink(
         sink.iterate(inputfile, position)
 
 
-@app.command("kafka")
+@app.command(
+    "kafka", context_settings={"allow_extra_args": True, "ignore_unknown_options": True}
+)
 def kafka_sinks(
+    ctx: typer.Context,
     inputfile: Optional[typer.FileText] = typer.Argument(
         sys.stdin,
         show_default=False,
@@ -81,19 +84,44 @@ def kafka_sinks(
         "--position",
         help="Position for progress bar, use 1 if you're piping from generate.",
     ),
+    extra_config: Optional[bool] = typer.Option(
+        None, help="Key=Value pairs for additional config to kafka."
+    ),
+    sasl_username: Optional[str] = typer.Option(None, envvar="SASL_USERNAME"),
+    sasl_password: Optional[str] = typer.Option(None, envvar="SASL_PASSWORD"),
 ):
-    # Set the progress bar position based on if the input is stdin
+    # Strip the key/value pairs from the extra config into a dict for config
+    extra_config = dict(x.split("=") for x in ctx.args) if extra_config else {}
+
     if producer == AvailableKafkaProducers.kafka_confluent:
         sink = ImplementedSinks.ConfluentKafka(
-            rate=rate, schedule=schedule, broker=broker, topic=topic
+            rate=rate,
+            schedule=schedule,
+            broker=broker,
+            topic=topic,
+            sasl_username=sasl_username,
+            sasl_password=sasl_password,
+            **extra_config,
         )
     if producer == AvailableKafkaProducers.kafka_confluent_mp:
         sink = ImplementedSinks.ConfluentKafkaMP(
-            rate=rate, schedule=schedule, broker=broker, topic=topic
+            rate=rate,
+            schedule=schedule,
+            broker=broker,
+            topic=topic,
+            sasl_username=sasl_username,
+            sasl_password=sasl_password,
+            **extra_config,
         )
     if producer == AvailableKafkaProducers.kafka_python:
         sink = ImplementedSinks.Kafka(
-            rate=rate, schedule=schedule, broker=broker, topic=topic
+            rate=rate,
+            schedule=schedule,
+            broker=broker,
+            topic=topic,
+            sasl_username=sasl_username,
+            sasl_password=sasl_password,
+            **extra_config,
         )
 
     sink.iterate(inputfile, position)
@@ -173,8 +201,8 @@ def files_sink(
         show_default=False,
         help="Path to textfile to stream, defaults to stdin pipe if none given.",
     ),
-    compressed: Optional[FilesCompressors] = typer.Option(
-        None, "-c", "--compressor", help="Write compressed logs."
+    compressor: Optional[FilesCompressors] = typer.Option(
+        None, "-z", "--compressor", help="Write compressed logs."
     ),
     rate: Optional[int] = typer.Option(
         None, "-r", "--rate", help="Rate-limit line generation per second."
@@ -197,7 +225,7 @@ def files_sink(
     with ImplementedSinks.Files(
         rate=rate,
         schedule=schedule,
-        compressed=compressed,
+        compressed=compressor,
         path=path,
         linecount=line_count,
     ) as sink:
