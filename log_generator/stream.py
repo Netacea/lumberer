@@ -21,7 +21,8 @@ class FilesCompressors(Enum):
     lzma = "lzma"
     zstd = "zstd"
 
-app = typer.Typer()
+
+app = typer.Typer(add_completion=False)
 
 
 @app.command("stdout")

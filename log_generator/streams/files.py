@@ -52,9 +52,7 @@ class Files(Output):
 
     def write(self, key: str):
         if self.compressed:
-            self._compress(
-                method=self.compressed.value
-            )
+            self._compress(method=self.compressed.value)
         else:
             self._write()
         with open(Path(self.path) / Path(key).with_suffix(self.suffix), "wb") as file:
