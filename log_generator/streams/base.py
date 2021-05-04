@@ -1,14 +1,25 @@
 import functools as _functools
 import json
+import sys
 import threading as _threading
 import time
+from bz2 import BZ2File
 from gzip import GzipFile
+from lzma import LZMAFile
 from io import BytesIO
 from itertools import cycle
 from sys import exit
-from typing import Callable
+from typing import Callable, TextIO
 
 from cachetools import TTLCache, cached
+
+# Remove standard handler and write loguru lines via tqdm.write
+from loguru import logger
+from tqdm import tqdm
+from zstandard import FLUSH_FRAME, ZstdCompressor
+
+logger.remove()
+logger.add(lambda msg: tqdm.write(msg, end="", file=sys.stderr))
 
 
 def rate_limited(max_per_second: int) -> Callable:
@@ -56,7 +67,8 @@ class Output:
 
         Args:
             rate (int, optional): Rate limiter per second. Defaults to None.
-            schedule (dict, optional): Dictionary of scheduled rate limits. Defaults to None.
+            schedule (dict, optional): Dictionary of scheduled rate limits.
+            Defaults to None.
         """
         self._reset()
         self.rate = rate
@@ -99,6 +111,57 @@ class Output:
 
             return subfunction(self)
 
+    def _send(self, logline: str):
+        raise NotImplementedError
+
+    def _compress(self, method: str = "gzip"):
+        def bytes_buffer():
+            return "".join(self.buffer).encode("UTF-8")
+
+        if method == "gzip":
+            gz = GzipFile(None, "wb", compresslevel=9, fileobj=self.body)
+            gz.write(bytes_buffer())
+            gz.close()
+            self.suffix = ".log.gz"
+        elif method == "bzip":
+            bz = BZ2File(self.body, "wb", compresslevel=9)
+            bz.write(bytes_buffer())
+            bz.close()
+            self.suffix = ".log.bz2"
+        elif method == "lzma":
+            lz = LZMAFile(self.body, "wb")
+            lz.write(bytes_buffer())
+            lz.close()
+            self.suffix = ".log.xz"
+        elif method == "zstd":
+            cctx = ZstdCompressor(level=12)
+            zs = cctx.stream_writer(self.body)
+            zs.write(bytes_buffer())
+            zs.flush(FLUSH_FRAME)
+            self.suffix = ".log.zstd"
+
+    def _write(self):
+        self.body.write("".join(self.buffer).encode("utf-8"))
+
+    def _reset(self):
+        self.ttl = None
+        self.buffer = []
+        self.body = BytesIO()
+
+    def iterate(self, inputfile: TextIO, position: int):
+        [
+            self.send(line)
+            for line in tqdm(
+                inputfile,
+                unit=" msgs",
+                desc="Streaming",
+                unit_scale=True,
+                position=position,
+                mininterval=0.5,
+                maxinterval=1,
+            )
+        ]
+
     def send(self, logline: str):
         """Sent log line to sink.
 
@@ -113,17 +176,3 @@ class Output:
             func(logline)
         else:
             self._send(logline)
-
-    def _send(self, logline: str):
-        raise NotImplementedError
-
-    def _compress(self, buffer: list, method: str = "gzip"):
-        if self.compressed:
-            gz = GzipFile(None, "wb", 7, self.body)
-            gz.write("".join(self.buffer).encode("utf-8"))
-            gz.close()
-
-    def _reset(self):
-        self.ttl = None
-        self.buffer = []
-        self.body = BytesIO()

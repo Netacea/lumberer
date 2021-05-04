@@ -10,7 +10,6 @@ from confluent_kafka import (
     Producer,
     TopicPartition,
 )
-
 from streams.base import Output
 
 

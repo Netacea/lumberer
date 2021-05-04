@@ -1,8 +1,8 @@
 from datetime import datetime, timezone
 
 import boto3
-from botocore.exceptions import ClientError
 
+# from botocore.exceptions import ClientError
 from streams.base import Output
 
 
@@ -21,9 +21,11 @@ class S3(Output):
         Args:
             bucket (str): Bucket to write to.
             prefix (str): Prefix to add to all the keys.
-            rate (int, optional): Ratelimit per second to collect log lines. Defaults to None.
+            rate (int, optional): Ratelimit per second to collect log lines.
+            Defaults to None.
             schedule (dict, optional): Scheduled ratelimits. Defaults to None.
-            key_line_count (int, optional): Size of files prior to upload in lines. Defaults to 1000.
+            key_line_count (int, optional): Size of files prior to upload in lines.
+            Defaults to 1000.
             compressed (bool, optional): Compress the resulting keys. Defaults to False.
         """
         super().__init__(rate=rate, schedule=schedule)
@@ -61,14 +63,17 @@ class S3(Output):
             key (str): File key to write to.
         """
         # TODO - Add error handling in this method.
-        self._compress(self.buffer)
+        if self.compressed:
+            self._compress(method="gzip")
+        else:
+            self._write()
         # s3_object = self.s3.Object(self.bucket, f"{self.prefix}{key}{self.suffix}")
         # s3_object.put(Body="".join(self.buffer))
         self.s3.put_object(
             Bucket=self.bucket,
             Key=f"{self.prefix}{key}{self.suffix}",
             ContentType="text/plain",
-            ContentEncoding="gzip" if self.compress else "utf-8",
+            ContentEncoding="gzip" if self.compressed else "utf-8",
             Body=self.body.getvalue(),
         )
         self._reset()

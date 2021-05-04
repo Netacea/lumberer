@@ -2,8 +2,8 @@ from generators.base import LogRender
 
 
 class Cloudfront(LogRender):
-    def __init__(self, iterations, realtime, baddata):
-        super().__init__(iterations, realtime, baddata)
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         self.timestamp_format = "%Y-%m-%d %H:%M:%S"
 
     def generate(self, d: dict) -> str:

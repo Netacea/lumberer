@@ -1,4 +1,5 @@
 from sys import stdout
+
 from streams.base import Output
 
 

@@ -1,6 +1,7 @@
+from datetime import datetime, timezone
+
 import boto3
 from botocore.exceptions import ClientError
-from datetime import datetime, timezone
 from streams.base import Output
 
 

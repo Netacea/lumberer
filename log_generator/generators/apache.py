@@ -2,8 +2,8 @@ from generators.base import LogRender
 
 
 class Apache(LogRender):
-    def __init__(self, iterations, realtime, baddata):
-        super().__init__(iterations, realtime, baddata)
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         self.timestamp_format = "%d/%b/%Y:%H:%M:%S +0000"
 
     def generate(self, d: dict) -> str:

@@ -4,11 +4,8 @@ import sys
 from enum import Enum
 from typing import Optional
 
-from web import Web
-
-import typer
 import generators
-
+import typer
 from __init__ import version_callback
 
 
@@ -41,6 +38,15 @@ def generate(
         "--baddata",
         help="Generate percentage of bad data to mix in with good data (e.g. 50 = 50%)",
     ),
+    seed: Optional[int] = typer.Option(
+        4321, "-s", "--seed", help="Reproducible seed to generate fake data with."
+    ),
+    position: Optional[int] = typer.Option(
+        0,
+        "-p",
+        "--position",
+        help="Position for progress bar, use 1 if you're piping from generate.",
+    ),
     version: Optional[bool] = typer.Option(
         None, "--version", callback=version_callback, is_eager=True
     ),
@@ -48,9 +54,9 @@ def generate(
     """Generates log lines to stdout."""
 
     log_generator = getattr(generators, log_type.value)
-    log_generator(iterations=iterations, realtime=realtime, baddata=baddata).render(
-        file=sys.stdout, quiet=quiet
-    )
+    log_generator(
+        iterations=iterations, realtime=realtime, baddata=baddata, seed=seed
+    ).render(file=sys.stdout, quiet=quiet, position=position)
 
 
 if __name__ == "__main__":
