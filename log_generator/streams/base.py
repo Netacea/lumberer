@@ -1,5 +1,6 @@
 import functools as _functools
 import json
+from os import close
 import sys
 import threading as _threading
 import time
@@ -118,27 +119,23 @@ class Output:
         def bytes_buffer():
             return "".join(self.buffer).encode("UTF-8")
 
-        if method == "gzip":
-            gz = GzipFile(None, "wb", compresslevel=9, fileobj=self.body)
-            gz.write(bytes_buffer())
-            gz.close()
+        if method == "zstd":
+            cctx = ZstdCompressor(level=12)
+            compressed = cctx.stream_writer(self.body, closefd=False)
+            self.suffix = ".log.zstd"
+        elif method == "gzip":
+            compressed = GzipFile(None, "wb", compresslevel=9, fileobj=self.body)
             self.suffix = ".log.gz"
         elif method == "bzip":
-            bz = BZ2File(self.body, "wb", compresslevel=9)
-            bz.write(bytes_buffer())
-            bz.close()
+            compressed = BZ2File(self.body, "wb", compresslevel=9)
             self.suffix = ".log.bz2"
         elif method == "lzma":
-            lz = LZMAFile(self.body, "wb")
-            lz.write(bytes_buffer())
-            lz.close()
+            compressed = LZMAFile(self.body, "wb")
             self.suffix = ".log.xz"
-        elif method == "zstd":
-            cctx = ZstdCompressor(level=12)
-            zs = cctx.stream_writer(self.body)
-            zs.write(bytes_buffer())
-            zs.flush(FLUSH_FRAME)
-            self.suffix = ".log.zstd"
+
+        compressed.write(bytes_buffer())
+        compressed.flush()
+        compressed.close()
 
     def _write(self):
         self.body.write("".join(self.buffer).encode("utf-8"))
