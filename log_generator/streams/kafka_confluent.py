@@ -1,4 +1,5 @@
 import queue
+import sys
 from multiprocessing import Event, JoinableQueue, Process
 from os import getpid
 from time import sleep
@@ -8,39 +9,52 @@ from confluent_kafka import (
     Consumer,
     KafkaError,
     Producer,
+    SerializingProducer,
     TopicPartition,
 )
+from loguru import logger
 from streams.base import Output
+
+logger.remove()
+logger.add(sys.stdout, level="DEBUG")
 
 
 class ConfluentKafka(Output):
     def __init__(
-        self, broker: list, topic: str, rate: int = None, schedule: dict = None
+        self,
+        broker: list,
+        topic: str,
+        rate: int,
+        schedule: dict,
+        sasl_username: str,
+        sasl_password: str,
+        **kwargs,
     ):
         """Kafka sink using the confluent_kafka library.
 
         Args:
             broker (list): List of brokers to connect to.
             topic (str): Topic to produce the messages to.
-            rate (int, optional): Rate per second to send. Defaults to None.
-            schedule (dict, optional): Scheduled rate limits. Defaults to None.
+            rate (int): Rate per second to send.
+            schedule (dict): Scheduled rate limits.
+            sasl_username (str): Optional SASL username.
+            sasl_password (str): Optional SASL password.
         """
         super().__init__(rate=rate, schedule=schedule)
+        extra_config = kwargs
+        if all([sasl_password, sasl_username]):
+            extra_config.update(
+                {"sasl.username": sasl_username, "sasl.password": sasl_password}
+            )
         self.bootstrap_servers = broker
         self.topic = topic
         self.producer = Producer(
             {
                 "bootstrap.servers": ",".join(self.bootstrap_servers),
-                "batch.num.messages": 2000,
-                "queue.buffering.max.ms": 1000,
-                "batch.size": 32768,
-                # "linger.ms": 1000,
-                # "max.in.flight.requests.per.connection": 10,
-                # "queue.buffering.backpressure.threshold": 2,
-                # "statistics.interval.ms": 10000,
-                # "stats_cb": logger.debug,
-                # "throttle_cb": logger.debug,
+                "linger.ms": 50,
             }
+            | extra_config,
+            logger=logger,
         )
 
     def __enter__(self):
@@ -56,13 +70,28 @@ class ConfluentKafka(Output):
             print("Failed to produce all the messages to Kafka")
             raise
 
+    @staticmethod
+    def _acked(err, msg):
+        global delivered_records
+        """Delivery report handler called on
+        successful or failed delivery of message
+        """
+        if err is not None:
+            print("Failed to deliver message: {}".format(err))
+        else:
+            print(
+                "Produced record to topic {} partition [{}] @ offset {}".format(
+                    msg.topic(), msg.partition(), msg.offset()
+                )
+            )
+
     def _send(self, logline: str):
         try:
-            self.producer.produce(self.topic, logline.encode("UTF-8"))
+            self.producer.produce(self.topic, value=logline)
             self.producer.poll(0)
         except BufferError:
             self.producer.poll(10)
-            self.producer.produce(self.topic, logline.encode("UTF-8"))
+            self.producer.produce(self.topic, value=logline)
 
 
 class ConfluentKafkaMP(Output):
@@ -70,19 +99,29 @@ class ConfluentKafkaMP(Output):
         self,
         broker: list,
         topic: str,
-        rate: int = None,
-        schedule: dict = None,
-        buffer_size: int = 100000,
+        rate: int,
+        schedule: dict,
+        sasl_username: str,
+        sasl_password: str,
+        buffer_size: int = 10000,
+        **kwargs,
     ):
         """Kafka sink using the confluent_kafka library and multiprocessing.
 
         Args:
             broker (list): List of brokers to connect to.
             topic (str): Topic to produce the messages to.
-            rate (int, optional): Rate per second to send. Defaults to None.
-            schedule (dict, optional): Scheduled rate limits. Defaults to None.
+            rate (int, optional): Rate per second to send.
+            schedule (dict, optional): Scheduled rate limits.
+            sasl_username (str): Optional SASL username.
+            sasl_password (str): Optional SASL password.
         """
         super().__init__(rate=rate, schedule=schedule)
+        extra_config = kwargs
+        if all([sasl_password, sasl_username]):
+            extra_config.update(
+                {"sasl.username": sasl_username, "sasl.password": sasl_password}
+            )
         self.bootstrap_servers = broker
         self.topic = topic
         self.partition_count = 4
@@ -90,16 +129,8 @@ class ConfluentKafkaMP(Output):
         self.producer_shutdown = Event()
         config = {
             "bootstrap.servers": ",".join(self.bootstrap_servers),
-            "batch.num.messages": 2000,
-            "queue.buffering.max.ms": 1000,
-            "batch.size": 32768,
-            # "linger.ms": 1000,
-            # "max.in.flight.requests.per.connection": 10,
-            # "queue.buffering.backpressure.threshold": 2,
-            # "statistics.interval.ms": 10000,
-            # "stats_cb": logger.debug,
-            # "throttle_cb": logger.debug,
-        }
+            "linger.ms": 50,
+        } | extra_config
         self.producers = [
             Process(
                 target=self.producer,
@@ -130,7 +161,7 @@ class ConfluentKafkaMP(Output):
             print("Failed to produce all the messages to Kafka")
             raise
         for proc in self.producers:
-            proc.join()
+            proc.join(10)
             proc.close()
 
     def producer(self, producer_queue, shutdown, config):

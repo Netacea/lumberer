@@ -1,14 +1,14 @@
 import functools as _functools
 import json
-from os import close
 import sys
 import threading as _threading
 import time
 from bz2 import BZ2File
 from gzip import GzipFile
-from lzma import LZMAFile
 from io import BytesIO
 from itertools import cycle
+from lzma import LZMAFile
+from os import close
 from sys import exit
 from typing import Callable, TextIO
 
