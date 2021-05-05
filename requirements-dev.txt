@@ -1,1 +1,2 @@
 py-spy==0.3.5
+pybadges==2.2.1

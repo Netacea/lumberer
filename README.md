@@ -1,8 +1,15 @@
-# Netacea Log Generator
+# Netacea _Pseudo_ Log Generator
 
-:trophy: _Lab Week Winner 2021/04_ :trophy:
+[![Netacea Header](https://assets.ntcacdn.net/header.jpg)](https://www.netacea.com/)
 
-![splash](docs/splash.gif) 
+[![Python 3.9](https://img.shields.io/badge/python-3.9-blue.svg)](https://www.python.org/downloads/release/python-394/)
+[![Version](docs/version_badge.svg)](https://github.com/Naereen/StrapDown.js/blob/main/log_generator/__init__.py)
+[![GitHub contributors](https://img.shields.io/github/contributors/Netacea/pseudo-log-generator.svg)](https://GitHub.com/Netacea/pseudo-log-generator/graphs/contributors/)
+[![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://GitHub.com/Netacea/pseudo-log-generator/graphs/commit-activity)
+
+:trophy: **_Internal Lab Week Winner 2021/04_** :trophy:
+
+![splash](docs/splash.gif)
 
 ## tl;dr
 
