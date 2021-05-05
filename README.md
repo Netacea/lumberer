@@ -19,22 +19,6 @@
 
 **_Your dreams have been answered._**
 
-
-
-## Requirements 
-
-### Functional Requirements
-- [x] Generate logs
-- [x] To be used by multiple parsers
-- [x] Output to multiple sinks
-
-### Non Functional Requirements
-- [x] Benchmark mode
-- [x] Add some unexpected data
-- [x] Pacing of outputing data -> Scheduling in the future
-- [x] Handle a lot of data
-- [x] Multithreaded processes
-
 ## Development Setup
 
 This project is a boilerplate python package using pip to install dependencies. As such you can set up a virtualenv and install dependencies if you wish, run it inside a docker container, or use the Visual Studio Code Devcontainer bindings for a full development stack.
@@ -43,9 +27,10 @@ This project is a boilerplate python package using pip to install dependencies. 
 
 _This only sets up the client application, not the docker compose stack for kafka to develop against_
 
-- Git clone this repository
-- python -m venv .venv
-- pip install -r requirements.txt
+- `git clone` this repository
+- `cd lumberer`
+- `python -m venv .venv`
+- `pip install -r requirements.txt`
 
 ### Visual Studio Code (WSL2/Linux VM/Windows)
 
