@@ -88,7 +88,7 @@ docker run -i log-generator:latest python generate --logtype apache --iterations
 You can run both together with a pipe, despite it being a lot of clunky docker CLI wrapping it:
 
 ```bash
-docker run -i log-generator:latest python generate --logtype apache --iterations 10 | docker run -i -e SASL_USERNAME=EXAMPLEUSERNAME -e SASL_PASSWORD=EXAMPLEPASSWORD log-generator:latest python stream kafka --broker example.eu-west-1.aws.confluent.cloud:9092 --topic test1 -e security.protocol=SASL_SSL -e sasl.mechanisms=PLAIN -e compression.type=zstd
+docker run -i log-generator:latest python generate --logtype apache --iterations 10 | docker run -i -e SASL_USERNAME=EXAMPLEUSERNAME -e SASL_PASSWORD=EXAMPLEPASSWORD log-generator:latest python stream kafka --broker example.eu-west-1.aws.confluent.cloud:9092 --topic test1 -e security.protocol=SASL_SSL -e sasl.mechanisms=PLAIN -e compression.type=zstd -p 1
 ```
 
 ### General Usage
