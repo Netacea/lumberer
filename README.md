@@ -7,8 +7,6 @@
 [![GitHub contributors](https://img.shields.io/github/contributors/Netacea/lumberer.svg)](https://GitHub.com/Netacea/lumberer/graphs/contributors/)
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://GitHub.com/Netacea/lumberer/graphs/commit-activity)
 
-:trophy: **_Internal Lab Week Winner 2021/04_** :trophy:
-
 ![splash](docs/splash.gif)
 
 ## tl;dr
