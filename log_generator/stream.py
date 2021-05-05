@@ -50,9 +50,7 @@ def stdout_sink(
         sink.iterate(inputfile, position)
 
 
-@app.command(
-    "kafka", context_settings={"allow_extra_args": True, "ignore_unknown_options": True}
-)
+@app.command("kafka")
 def kafka_sinks(
     ctx: typer.Context,
     inputfile: Optional[typer.FileText] = typer.Argument(
@@ -84,14 +82,17 @@ def kafka_sinks(
         "--position",
         help="Position for progress bar, use 1 if you're piping from generate.",
     ),
-    extra_config: Optional[bool] = typer.Option(
-        None, help="Key=Value pairs for additional config to kafka."
+    extra_config: Optional[List[str]] = typer.Option(
+        None,
+        "-e",
+        "--config",
+        help="Key=Value pairs for additional config to kafka.",
     ),
     sasl_username: Optional[str] = typer.Option(None, envvar="SASL_USERNAME"),
     sasl_password: Optional[str] = typer.Option(None, envvar="SASL_PASSWORD"),
 ):
     # Strip the key/value pairs from the extra config into a dict for config
-    extra_config = dict(x.split("=") for x in ctx.args) if extra_config else {}
+    extra_config = dict(x.split("=") for x in extra_config) if extra_config else {}
 
     if producer == AvailableKafkaProducers.kafka_confluent:
         sink = ImplementedSinks.ConfluentKafka(
