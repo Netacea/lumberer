@@ -7,8 +7,6 @@
 [![GitHub contributors](https://img.shields.io/github/contributors/Netacea/lumberer.svg)](https://GitHub.com/Netacea/lumberer/graphs/contributors/)
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://GitHub.com/Netacea/lumberer/graphs/commit-activity)
 
-![splash](docs/splash.gif)
-
 ## tl;dr
 
 - Ever wanted to generate pseudo realistic data for testing a process?
@@ -16,6 +14,8 @@
 - Ever wanted to be able to rate limit that process?
 
 **_Your dreams have been answered._**
+
+![splash](docs/splash.gif)
 
 ## Development Setup
 
