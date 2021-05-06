@@ -8,7 +8,6 @@ from gzip import GzipFile
 from io import BytesIO
 from itertools import cycle
 from lzma import LZMAFile
-from os import close
 from sys import exit
 from typing import Callable, TextIO
 
@@ -156,6 +155,7 @@ class Output:
                 position=position,
                 mininterval=0.5,
                 maxinterval=1,
+                disable=None,
             )
         ]
 
