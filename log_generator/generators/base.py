@@ -27,7 +27,7 @@ class LogRender:
     @staticmethod
     def _seed_data(fake, realtime, timestamp):
         static_data = {
-            "host": "www-netacea-com",  # fake.domain_name(),
+            "host": "example.com",  # fake.domain_name(),
         }
 
         @cached(cache=valid_log_data_cache)
