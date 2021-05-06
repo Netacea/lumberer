@@ -2,18 +2,11 @@
 
 import sys
 from enum import Enum
+from pathlib import Path
 from typing import List, Optional
 
-import typer
-from loguru import logger
-from tqdm import tqdm, trange
-
 import streams as ImplementedSinks
-from web import Web
-
-# Remove standard handler and write loguru lines via tqdm.write
-logger.remove()
-logger.add(lambda msg: tqdm.write(msg, end="", file=sys.stderr))
+import typer
 
 
 class AvailableKafkaProducers(str, Enum):
@@ -22,7 +15,14 @@ class AvailableKafkaProducers(str, Enum):
     kafka_confluent_mp = "kafka-confluent-multiprocessing"
 
 
-app = typer.Typer()
+class FilesCompressors(Enum):
+    bzip = "bzip"
+    gzip = "gzip"
+    lzma = "lzma"
+    zstd = "zstd"
+
+
+app = typer.Typer(add_completion=False)
 
 
 @app.command("stdout")
@@ -47,20 +47,12 @@ def stdout_sink(
 ):
     # Set the progress bar position based on if the input is stdin
     with ImplementedSinks.Stdout(rate=rate, schedule=schedule) as sink:
-        [
-            sink.send(line)
-            for line in tqdm(
-                inputfile,
-                unit=" msgs",
-                desc="Streaming",
-                unit_scale=True,
-                position=position,
-            )
-        ]
+        sink.iterate(inputfile, position)
 
 
 @app.command("kafka")
 def kafka_sinks(
+    ctx: typer.Context,
     inputfile: Optional[typer.FileText] = typer.Argument(
         sys.stdin,
         show_default=False,
@@ -68,7 +60,7 @@ def kafka_sinks(
     ),
     broker: List[str] = typer.Option(
         ...,
-        help="Kafka broker to connect to. Use flag multiple times for multiple brokers.",
+        help="Kafka broker to connect to. Can be used multiple times.",
     ),
     topic: str = typer.Option(..., help="Kafka topic to send to."),
     producer: AvailableKafkaProducers = typer.Option(
@@ -90,31 +82,50 @@ def kafka_sinks(
         "--position",
         help="Position for progress bar, use 1 if you're piping from generate.",
     ),
+    extra_config: Optional[List[str]] = typer.Option(
+        None,
+        "-e",
+        "--config",
+        help="Key=Value pairs for additional config to kafka.",
+    ),
+    sasl_username: Optional[str] = typer.Option(None, envvar="SASL_USERNAME"),
+    sasl_password: Optional[str] = typer.Option(None, envvar="SASL_PASSWORD"),
 ):
-    # Set the progress bar position based on if the input is stdin
+    # Strip the key/value pairs from the extra config into a dict for config
+    extra_config = dict(x.split("=") for x in extra_config) if extra_config else {}
+
     if producer == AvailableKafkaProducers.kafka_confluent:
         sink = ImplementedSinks.ConfluentKafka(
-            rate=rate, schedule=schedule, broker=broker, topic=topic
+            rate=rate,
+            schedule=schedule,
+            broker=broker,
+            topic=topic,
+            sasl_username=sasl_username,
+            sasl_password=sasl_password,
+            **extra_config,
         )
     if producer == AvailableKafkaProducers.kafka_confluent_mp:
         sink = ImplementedSinks.ConfluentKafkaMP(
-            rate=rate, schedule=schedule, broker=broker, topic=topic
+            rate=rate,
+            schedule=schedule,
+            broker=broker,
+            topic=topic,
+            sasl_username=sasl_username,
+            sasl_password=sasl_password,
+            **extra_config,
         )
     if producer == AvailableKafkaProducers.kafka_python:
         sink = ImplementedSinks.Kafka(
-            rate=rate, schedule=schedule, broker=broker, topic=topic
+            rate=rate,
+            schedule=schedule,
+            broker=broker,
+            topic=topic,
+            sasl_username=sasl_username,
+            sasl_password=sasl_password,
+            **extra_config,
         )
 
-    [
-        sink.send(line)
-        for line in tqdm(
-            inputfile,
-            unit=" msgs",
-            desc="Streaming",
-            unit_scale=True,
-            position=position,
-        )
-    ]
+    sink.iterate(inputfile, position)
     sink.close()
 
 
@@ -151,16 +162,7 @@ def s3_sink(
         schedule=schedule,
         key_line_count=key_line_count,
     ) as sink:
-        [
-            sink.send(line)
-            for line in tqdm(
-                inputfile,
-                unit=" msgs",
-                desc="Streaming",
-                unit_scale=True,
-                position=position,
-            )
-        ]
+        sink.iterate(inputfile, position)
 
 
 @app.command("kinesis")
@@ -182,7 +184,7 @@ def kinesis_sink(
         "-p",
         "--position",
         help="Position for progress bar, use 1 if you're piping from generate.",
-    )
+    ),
 ):
     # Set the progress bar position based on if the input is stdin
     with ImplementedSinks.Kinesis(
@@ -190,16 +192,7 @@ def kinesis_sink(
         rate=rate,
         schedule=schedule,
     ) as sink:
-        [
-            sink.send(line)
-            for line in tqdm(
-                inputfile,
-                unit=" msgs",
-                desc="Streaming",
-                unit_scale=True,
-                position=position,
-            )
-        ]
+        sink.iterate(inputfile, position)
 
 
 @app.command("files")
@@ -208,6 +201,9 @@ def files_sink(
         sys.stdin,
         show_default=False,
         help="Path to textfile to stream, defaults to stdin pipe if none given.",
+    ),
+    compressor: Optional[FilesCompressors] = typer.Option(
+        None, "-z", "--compressor", help="Write compressed logs."
     ),
     rate: Optional[int] = typer.Option(
         None, "-r", "--rate", help="Rate-limit line generation per second."
@@ -221,19 +217,20 @@ def files_sink(
         "--position",
         help="Position for progress bar, use 1 if you're piping from generate.",
     ),
+    path: Optional[Path] = typer.Option(Path("."), help="Where to write the files to."),
+    line_count: Optional[int] = typer.Option(
+        1000, "-c", "--linecount", help="Max line count size per file."
+    ),
 ):
     # Set the progress bar position based on if the input is stdin
-    with ImplementedSinks.Files(rate=rate, schedule=schedule) as sink:
-        [
-            sink.send(line)
-            for line in tqdm(
-                inputfile,
-                unit=" msgs",
-                desc="Streaming",
-                unit_scale=True,
-                position=position,
-            )
-        ]
+    with ImplementedSinks.Files(
+        rate=rate,
+        schedule=schedule,
+        compressed=compressor,
+        path=path,
+        linecount=line_count,
+    ) as sink:
+        sink.iterate(inputfile, position)
 
 
 if __name__ == "__main__":

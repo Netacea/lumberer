@@ -1,9 +1,10 @@
 import datetime as dt
-from faker import Faker
-from cachetools import TTLCache, cached
 from random import choices
-from tqdm import trange, tqdm
+
+from cachetools import TTLCache, cached
+from faker import Faker
 from loguru import logger
+from tqdm import tqdm, trange
 
 # Remove standard handler and write loguru lines via tqdm.write
 logger.remove()
@@ -15,15 +16,13 @@ bad_log_data_cache = TTLCache(1, 1)
 
 
 class LogRender:
-    def __init__(
-        self, iterations: int, realtime: bool, baddata: float, seed: int = 4321
-    ):
-        self.iterations = iterations
-        self.realtime = realtime
-        self.junk_percentage = baddata
+    def __init__(self, **kwargs):
+        self.iterations = kwargs.get("iterations")
+        self.realtime = kwargs.get("realtime")
+        self.junk_percentage = kwargs.get("baddata")
         self.init_timestamp = dt.datetime.now()
         self.fake = Faker()
-        Faker.seed(seed)
+        Faker.seed(kwargs.get("seed"))
 
     @staticmethod
     def _seed_data(fake, realtime, timestamp):
@@ -142,7 +141,11 @@ class LogRender:
             fake, realtime, timestamp
         )
 
-    def render(self, file, quiet):
+    def render(self, **kwargs):
+        file = kwargs.get("file")
+        quiet = kwargs.get("quiet")
+        position = kwargs.get("position")
+
         def write(data=None):
             if not self.junk_percentage:
                 data = self._seed_data(self.fake, self.realtime, self.init_timestamp)
@@ -169,5 +172,9 @@ class LogRender:
             unit="lines",
             desc="Generating",
             unit_scale=True,
+            position=position,
+            mininterval=0.5,
+            maxinterval=1,
+            delay=1,
         ):
             write()

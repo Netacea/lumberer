@@ -1,8 +1,13 @@
-# Netacea Log Generator
+# Netacea Lumberer
 
-:trophy: _Lab Week Winner 2021/04_ :trophy:
+[![Netacea Header](https://assets.ntcacdn.net/header.jpg)](https://www.netacea.com/)
 
-![splash](docs/splash.gif) 
+[![Python 3.9](https://img.shields.io/badge/python-3.9-blue.svg)](https://www.python.org/downloads/release/python-394/)
+[![Version](docs/version_badge.svg)](https://github.com/Netacea/lumberer/blob/main/log_generator/__init__.py)
+[![GitHub contributors](https://img.shields.io/github/contributors/Netacea/lumberer.svg)](https://GitHub.com/Netacea/lumberer/graphs/contributors/)
+[![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://GitHub.com/Netacea/lumberer/graphs/commit-activity)
+
+![splash](docs/splash.gif)
 
 ## tl;dr
 
@@ -12,25 +17,22 @@
 
 **_Your dreams have been answered._**
 
+## Development Setup
 
+This project is a boilerplate python package using pip to install dependencies. As such you can set up a virtualenv and install dependencies if you wish, run it inside a docker container, or use the Visual Studio Code Devcontainer bindings for a full development stack.
 
-## Requirements 
+### Virtualenv
 
-### Functional Requirements
-- [x] Generate logs
-- [x] To be used by multiple parsers
-- [x] Output to multiple sinks
+_This only sets up the client application, not the docker compose stack for kafka to develop against_
 
-### Non Functional Requirements
-- [x] Benchmark mode
-- [x] Add some unexpected data
-- [x] Pacing of outputing data -> Scheduling in the future
-- [x] Handle a lot of data
-- [x] Multithreaded processes
-
-## Setup
+- `git clone` this repository
+- `cd lumberer`
+- `python -m venv .venv`
+- `pip install -r requirements.txt`
 
 ### Visual Studio Code (WSL2/Linux VM/Windows)
+
+_This starts a docker compose stack found at `.devcontainer/docker-compose.yml`, including kafka, zookeeper and CMAK_
 
 #### Prerequisites
 
@@ -49,8 +51,37 @@
   
 ![cmak](docs/cmak_setup.png) 
 
-
 ## Usage
+
+### Docker Specific Instructions
+
+Instead of dealing with the dependencies you can work with a docker container directly, but you need to build the Dockerfile included.
+
+```bash
+docker build -f Dockerfile . -t log-generator:latest
+```
+
+The instructions below apply to the container in terms of general use cases but the syntax is different:
+
+```bash
+docker run -i -e SASL_USERNAME=EXAMPLEUSERNAME -e SASL_PASSWORD=EXAMPLEPASSWORD log-generator:latest python stream kafka --broker example.eu-west-1.aws.confluent.cloud:9092 --topic test1 -e security.protocol=SASL_SSL -e sasl.mechanisms=PLAIN -e compression.type=zstd < larger.log
+```
+
+In this example, we're taking a file that resides outside the docker conatainer (`larger.log`) and using a pipe to stream it into stdin on the running python application inside the container, this then streams each line to Confluent Kafka with the additional configuration needed (such as the security options and optional compression).
+
+Conversely, generate works by writing to the docker containers stdout buffer, which is then returned to the docker client running the command:
+
+```bash
+docker run -i log-generator:latest python generate --logtype apache --iterations 10
+```
+
+You can run both together with a pipe, despite it being a lot of clunky docker CLI wrapping it:
+
+```bash
+docker run -i log-generator:latest python generate --logtype apache --iterations 10 | docker run -i -e SASL_USERNAME=EXAMPLEUSERNAME -e SASL_PASSWORD=EXAMPLEPASSWORD log-generator:latest python stream kafka --broker example.eu-west-1.aws.confluent.cloud:9092 --topic test1 -e security.protocol=SASL_SSL -e sasl.mechanisms=PLAIN -e compression.type=zstd -p 1
+```
+
+### General Usage
 
 The tool is split into two commands, the `generate` command which only deals with generating log lines (and printing them to standard out) and the `stream` command, which can either take a pipe in standard in, or a filename to a text file to open and stream.
 

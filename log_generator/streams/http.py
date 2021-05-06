@@ -1,5 +1,5 @@
-from streams.base import Output
 import httpx
+from streams.base import Output
 
 
 class HTTP(Output):
