@@ -23,27 +23,27 @@ To get development instructions, skip down to [the development section](#develop
 Instead of dealing with the dependencies you can work with a docker container directly, but you need to build the Dockerfile included.
 
 ```bash
-docker build -f Dockerfile . -t log-generator:latest
+docker build -f Dockerfile . -t lumberer:latest
 ```
 
 The instructions below apply to the container in terms of general use cases but the syntax is different:
 
 ```bash
-docker run -i -e SASL_USERNAME=EXAMPLEUSERNAME -e SASL_PASSWORD=EXAMPLEPASSWORD log-generator:latest python stream kafka --broker example.eu-west-1.aws.confluent.cloud:9092 --topic test1 -e security.protocol=SASL_SSL -e sasl.mechanisms=PLAIN -e compression.type=zstd < larger.log
+bzcat example.apache.log.bz2 | docker run -i -e SASL_USERNAME=EXAMPLE -e SASL_PASSWORD="EXAMPLE" lumberer:latest stream kafka --broker example.eu-west-1.aws.confluent.cloud:9092 --topic test1 -e security.protocol=SASL_SSL -e sasl.mechanisms=PLAIN -e compression.type=zstd
 ```
 
-In this example, we're taking a file that resides outside the docker conatainer (`larger.log`) and using a pipe to stream it into stdin on the running python application inside the container, this then streams each line to Confluent Kafka with the additional configuration needed (such as the security options and optional compression).
+In this example, we're taking a file that resides outside the docker conatainer (`example.apache.log.bz2`) and using a pipe to stream it into stdin on the running python application inside the container, this then streams each line to Confluent Kafka with the additional configuration needed (such as the security options and optional compression).
 
 Conversely, generate works by writing to the docker containers stdout buffer, which is then returned to the docker client running the command:
 
 ```bash
-docker run -i log-generator:latest python generate --logtype apache --iterations 10
+docker run -i lumberer:latest generate --logtype apache --iterations 10
 ```
 
 You can run both together with a pipe, despite it being a lot of clunky docker CLI wrapping it:
 
 ```bash
-docker run -i log-generator:latest python generate --logtype apache --iterations 10 | docker run -i -e SASL_USERNAME=EXAMPLEUSERNAME -e SASL_PASSWORD=EXAMPLEPASSWORD log-generator:latest python stream kafka --broker example.eu-west-1.aws.confluent.cloud:9092 --topic test1 -e security.protocol=SASL_SSL -e sasl.mechanisms=PLAIN -e compression.type=zstd -p 1
+docker run -i lumberer:latest generate --logtype apache --iterations 10 | docker run -i -e SASL_USERNAME=EXAMPLEUSERNAME -e SASL_PASSWORD=EXAMPLEPASSWORD lumberer:latest python stream kafka --broker example.eu-west-1.aws.confluent.cloud:9092 --topic test1 -e security.protocol=SASL_SSL -e sasl.mechanisms=PLAIN -e compression.type=zstd -p 1
 ```
 
 ### General Usage
