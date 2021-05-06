@@ -175,6 +175,5 @@ class LogRender:
             position=position,
             mininterval=0.5,
             maxinterval=1,
-            delay=1,
         ):
             write()

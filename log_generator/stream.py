@@ -195,7 +195,7 @@ def kinesis_sink(
         sink.iterate(inputfile, position)
 
 
-@app.command("files")
+@app.command("filesystem")
 def files_sink(
     inputfile: Optional[typer.FileText] = typer.Argument(
         sys.stdin,
