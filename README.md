@@ -179,7 +179,7 @@ _tl;dr `xargs` is set to use as many threads as it can via the use of the `-P 0`
 ## Sinks
 This tool has various sinks, with bespoke configuration pertaining to each module.
 
-**Note** - All the sinks implement a `--position` or `-p` flag on the `stream` program for setting the ordering of the progress bad, by default it's 0 but if you're piping from the generator, the progress bars will intersect, so set it to `1` for concurrent progress, else set the `--quiet` flag on the `generate` end to hide the first progress bar.
+**Note** - All the sinks implement a `--position` or `-p` flag on the `stream` program for setting the ordering of the progress bar, by default it's 0 but if you're piping from the generator, the progress bars will intersect, so set it to `1` for concurrent progress, else set the `--quiet` flag on the `generate` end to hide the first progress bar.
 The progress bar is set to be hidden by default in non TTY situations, like piping the output out of the `stream` program.
 
 ### Apache Kafka
