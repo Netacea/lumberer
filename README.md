@@ -17,7 +17,7 @@
 ![splash](docs/splash.gif)
 
 ## Usage
-To get development instructions, skip down to [the development section](#development-setup)
+To get development instructions, skip down to [the development section](#development)
 
 ### Docker Specific Instructions
 Instead of dealing with the dependencies you can work with a docker container directly, but you need to build the Dockerfile included.
