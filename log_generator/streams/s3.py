@@ -42,7 +42,7 @@ class S3(Output):
     def __exit__(self, type, value, traceback):
         if len(self.buffer) > 0:
             now = datetime.utcnow().replace(tzinfo=timezone.utc).isoformat()
-            self.write(f"{now}.log")
+            self.write(now)
 
     def _send(self, logline: str):
         """Send proxy to write to a buffer until the size is reached.
