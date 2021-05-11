@@ -7,7 +7,7 @@
 [![GitHub contributors](https://img.shields.io/github/contributors/Netacea/lumberer.svg)](https://GitHub.com/Netacea/lumberer/graphs/contributors/)
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://GitHub.com/Netacea/lumberer/graphs/commit-activity)
 
-:trophy: [Kafka Summit - Hackathon 2021 First Place Entry](https://kafkasummit.io/hackathon/) 🎉
+:trophy: Kafka Summit - Hackathon 2021 First Place Entry 🎉
 
 ## tl;dr
 - Ever wanted to generate pseudo realistic data for testing a process?
