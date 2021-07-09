@@ -15,7 +15,7 @@ class AvailableLogTypes(str, Enum):
     cloudflare = "Cloudflare"
 
 
-app = typer.Typer(add_completion=False)
+app = typer.Typer()
 
 
 @app.command()

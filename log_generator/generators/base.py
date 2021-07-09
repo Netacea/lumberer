@@ -11,7 +11,7 @@ logger.remove()
 logger.add(lambda msg: tqdm.write(msg, end=""))
 
 
-valid_log_data_cache = TTLCache(1, 1)
+valid_log_data_cache = TTLCache(1, 0.01)
 bad_log_data_cache = TTLCache(1, 1)
 
 

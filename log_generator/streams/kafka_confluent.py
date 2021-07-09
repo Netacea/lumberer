@@ -14,9 +14,10 @@ from confluent_kafka import (
 )
 from loguru import logger
 from streams.base import Output
+from typing import List, Tuple
 
 logger.remove()
-logger.add(sys.stdout, level="DEBUG")
+logger.add(sys.stderr, level="DEBUG")
 
 
 class ConfluentKafka(Output):
@@ -24,6 +25,7 @@ class ConfluentKafka(Output):
         self,
         broker: list,
         topic: str,
+        headers: List[Tuple],
         rate: int,
         schedule: dict,
         sasl_username: str,
@@ -35,12 +37,16 @@ class ConfluentKafka(Output):
         Args:
             broker (list): List of brokers to connect to.
             topic (str): Topic to produce the messages to.
+            headers (list[tuple]): Headers for the messages.
             rate (int): Rate per second to send.
             schedule (dict): Scheduled rate limits.
             sasl_username (str): Optional SASL username.
             sasl_password (str): Optional SASL password.
         """
         super().__init__(rate=rate, schedule=schedule)
+        self.headers = (
+            [tuple(header.split("=")) for header in headers] if headers else None
+        )
         extra_config = kwargs
         if all([sasl_password, sasl_username]):
             extra_config.update(
@@ -54,7 +60,7 @@ class ConfluentKafka(Output):
                 "linger.ms": 50,
             }
             | extra_config,
-            logger=logger,
+            # logger=logger,
         )
 
     def __enter__(self):
@@ -72,7 +78,6 @@ class ConfluentKafka(Output):
 
     @staticmethod
     def _acked(err, msg):
-        global delivered_records
         """Delivery report handler called on
         successful or failed delivery of message
         """
@@ -87,11 +92,11 @@ class ConfluentKafka(Output):
 
     def _send(self, logline: str):
         try:
-            self.producer.produce(self.topic, value=logline)
+            self.producer.produce(self.topic, value=logline, headers=self.headers)
             self.producer.poll(0)
         except BufferError:
             self.producer.poll(10)
-            self.producer.produce(self.topic, value=logline)
+            self.producer.produce(self.topic, value=logline, headers=self.headers)
 
 
 class ConfluentKafkaMP(Output):

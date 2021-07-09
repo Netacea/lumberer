@@ -22,7 +22,7 @@ class FilesCompressors(Enum):
     zstd = "zstd"
 
 
-app = typer.Typer(add_completion=False)
+app = typer.Typer()
 
 
 @app.command("stdout")
@@ -63,6 +63,12 @@ def kafka_sinks(
         help="Kafka broker to connect to. Can be used multiple times.",
     ),
     topic: str = typer.Option(..., help="Kafka topic to send to."),
+    headers: Optional[List[str]] = typer.Option(
+        None,
+        "-h",
+        "--header",
+        help="Key=Value pairs for additional headers to kafka.",
+    ),
     producer: AvailableKafkaProducers = typer.Option(
         AvailableKafkaProducers.kafka_confluent,
         "-p",
@@ -100,6 +106,7 @@ def kafka_sinks(
             schedule=schedule,
             broker=broker,
             topic=topic,
+            headers=headers,
             sasl_username=sasl_username,
             sasl_password=sasl_password,
             **extra_config,
@@ -137,7 +144,7 @@ def s3_sink(
         help="Path to textfile to stream, defaults to stdin pipe if none given.",
     ),
     bucket: str = typer.Option(..., help="The S3 bucket to write to."),
-    prefix: str = typer.Option(..., help="Prefix for the S3 key."),
+    prefix: str = typer.Option("", help="Prefix for the S3 key."),
     rate: Optional[int] = typer.Option(
         None, "-r", "--rate", help="Rate-limit line generation per second."
     ),

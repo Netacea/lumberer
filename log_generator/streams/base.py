@@ -168,6 +168,7 @@ class Output:
         Returns:
             None
         """
+        logline = logline.strip()
         if self.rate or self.ttl:
             func = rate_limited(self._rate_polling())(self._send)
             func(logline)
