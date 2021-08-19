@@ -27,4 +27,5 @@ class NetaceaV2(LogRender):
             "query": d.query_params,
             "user_id": d.uuid,
         }
-        return json.dumps(log_line)
+        # v2 log lines come through as batches
+        return json.dumps([log_line])
