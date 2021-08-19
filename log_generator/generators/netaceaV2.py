@@ -9,6 +9,7 @@ class NetaceaV2(LogRender):
 
     def generate(self, d: dict) -> str:
         request = f"""{d.method} {d.uri_path}{d.query_params} ${d.http_protocol}"""
+        time_tuple = d.timestamp.timetuple()
         log_line: dict = {
             "status": str(d.http_status),
             "referrer": d.referer,
@@ -18,8 +19,8 @@ class NetaceaV2(LogRender):
             "integration_version": "lumbererVersion",
             "client": d.ip_address,
             "user_agent": d.user_agent,
-            "hour": d.timestamp.tm_hour,
-            "minute": d.timestamp.tm_min,
+            "hour": time_tuple.tm_hour,
+            "minute": time_tuple.tm_min,
             "@timestamp": d.timestamp.strftime(self.timestamp_format),
             "path": d.uri_path,
             "protocol": d.http_protocol,
